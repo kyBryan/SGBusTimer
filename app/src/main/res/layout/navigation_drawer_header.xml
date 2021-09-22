@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/navHeader"
+    android:layout_width="match_parent"
+    android:layout_height="100dp"
+    android:background="?attr/colorPrimaryDark">
+
+    <ImageView
+        android:id="@+id/imageView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:contentDescription="@string/sgbuslogo"
+        android:scaleType="fitStart"
+        app:srcCompat="@drawable/buslogo" />
+
+    <ImageButton
+        android:id="@+id/navCloseBtn"
+        android:layout_width="60dp"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginTop="25dp"
+        android:layout_marginEnd="-12dp"
+        android:layout_marginBottom="25dp"
+        android:background="@drawable/roundedcornerdark15dp"
+        android:contentDescription="@string/navigation_drawer_close"
+        android:paddingStart="2dp"
+        android:paddingEnd="0dp"
+        android:scaleType="fitStart"
+        app:srcCompat="?attr/homeAsUpIndicator"
+        app:tint="@color/white" />
+
+
+</RelativeLayout>
