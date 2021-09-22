@@ -21,6 +21,8 @@
     <color name="navMenuTextColor">#788290</color>
 
 
+    <!-- Fragments -->
+    <color name="toolBarColorYellow">#ffcb38</color>
 
 
 </resources>

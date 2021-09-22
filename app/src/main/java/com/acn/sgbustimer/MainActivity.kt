@@ -45,8 +45,12 @@ class MainActivity : AppCompatActivity() {
         navController.addOnDestinationChangedListener { nc: NavController, nd: NavDestination, bundle: Bundle? ->
             if (nd.id == nc.graph.startDestination) {
                 drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED)
+                toolbar.setBackgroundColor(getResources().getColor(R.color.colorPrimary, null))
+
             } else {
                 drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED)
+                supportActionBar?.setHomeAsUpIndicator(R.drawable.closeicon)
+                toolbar.setBackgroundColor(getResources().getColor(R.color.toolBarColorYellow, null))
             }
         }
         NavigationUI.setupWithNavController(binding.navView, navController)
@@ -65,6 +69,5 @@ class MainActivity : AppCompatActivity() {
         Timber.i("Enter Support Navigation Up")
         val navController = this.findNavController(R.id.navHostFragment)
         return NavigationUI.navigateUp(navController, appBarConfiguration)
-//        return navController.navigateUp(appBarConfiguration) || super.onSupportNavigateUp()
     }
 }
