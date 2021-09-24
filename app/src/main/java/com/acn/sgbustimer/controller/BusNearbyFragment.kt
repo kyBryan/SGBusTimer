@@ -7,6 +7,8 @@ import android.content.pm.PackageManager
 import android.location.Location
 import android.os.Bundle
 import android.view.*
+import android.widget.Toast
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.fragment.app.Fragment
 import androidx.databinding.DataBindingUtil
 import com.acn.sgbustimer.R
@@ -23,6 +25,9 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.libraries.places.api.Places;
 import com.google.android.libraries.places.api.net.PlacesClient
+import com.google.android.material.bottomsheet.BottomSheetBehavior
+import com.google.android.material.bottomsheet.BottomSheetDialog
+import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import kotlinx.coroutines.runBlocking
 import timber.log.Timber
 
@@ -44,6 +49,9 @@ class BusNearbyFragment : Fragment(), OnMapReadyCallback {
     private lateinit var appActivity: Activity
     private lateinit var appContext: Context
 
+    // Bottom Sheet
+    private lateinit var bottomSheetBehavior: BottomSheetBehavior<ConstraintLayout>
+
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -63,6 +71,34 @@ class BusNearbyFragment : Fragment(), OnMapReadyCallback {
         placesClient = Places.createClient(appContext)
 
         // Map End
+
+        //Bottom Sheet Dialog Start
+
+        bottomSheetBehavior = BottomSheetBehavior.from(binding.inclBusNearbyBottomSheetDialog.busNearbyBottomSheet)
+
+        bottomSheetBehavior.addBottomSheetCallback(object :
+            BottomSheetBehavior.BottomSheetCallback() {
+
+            override fun onSlide(bottomSheet: View, slideOffset: Float) {
+                // handle onSlide
+            }
+
+            override fun onStateChanged(bottomSheet: View, newState: Int) {
+                when (newState) {
+                    BottomSheetBehavior.STATE_COLLAPSED -> Toast.makeText(appContext, "STATE_COLLAPSED", Toast.LENGTH_SHORT).show()
+                    BottomSheetBehavior.STATE_EXPANDED -> Toast.makeText(appContext, "STATE_EXPANDED", Toast.LENGTH_SHORT).show()
+                    BottomSheetBehavior.STATE_DRAGGING -> Toast.makeText(appContext, "STATE_DRAGGING", Toast.LENGTH_SHORT).show()
+                    BottomSheetBehavior.STATE_SETTLING -> Toast.makeText(appContext, "STATE_SETTLING", Toast.LENGTH_SHORT).show()
+                    BottomSheetBehavior.STATE_HIDDEN -> Toast.makeText(appContext, "STATE_HIDDEN", Toast.LENGTH_SHORT).show()
+                    else -> Toast.makeText(appContext, "OTHER_STATE", Toast.LENGTH_SHORT).show()
+                }
+            }
+        })
+
+        bottomSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
+
+
+        //Bottom Sheet Dialog Ends
 
         // Inflate the layout for this fragment
         return binding.root
