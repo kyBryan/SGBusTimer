@@ -7,13 +7,15 @@ import android.content.pm.PackageManager
 import android.location.Location
 import android.os.Bundle
 import android.view.*
-import android.widget.Toast
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.fragment.app.Fragment
 import androidx.databinding.DataBindingUtil
 import com.acn.sgbustimer.R
 import com.acn.sgbustimer.databinding.BusNearbyViewFragmentBinding
 import androidx.core.app.ActivityCompat
+import androidx.recyclerview.widget.LinearLayoutManager
+import com.acn.sgbustimer.model.BusArrival
+import com.acn.sgbustimer.network.WebAccess
 import com.acn.sgbustimer.util.Constant
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
@@ -26,10 +28,11 @@ import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.libraries.places.api.Places;
 import com.google.android.libraries.places.api.net.PlacesClient
 import com.google.android.material.bottomsheet.BottomSheetBehavior
-import com.google.android.material.bottomsheet.BottomSheetDialog
-import com.google.android.material.bottomsheet.BottomSheetDialogFragment
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import timber.log.Timber
+import java.io.IOException
 
 
 class BusNearbyFragment : Fragment(), OnMapReadyCallback {
@@ -51,6 +54,12 @@ class BusNearbyFragment : Fragment(), OnMapReadyCallback {
 
     // Bottom Sheet
     private lateinit var bottomSheetBehavior: BottomSheetBehavior<ConstraintLayout>
+
+    // Data
+    private var listOfNearbyBusStops: MutableList<String> = mutableListOf("70211")
+
+    // Recycle View
+    private lateinit var busStopAdapter: BusNearbyBusStopAdapter
 
 
     override fun onCreateView(
@@ -84,14 +93,14 @@ class BusNearbyFragment : Fragment(), OnMapReadyCallback {
             }
 
             override fun onStateChanged(bottomSheet: View, newState: Int) {
-                when (newState) {
-                    BottomSheetBehavior.STATE_COLLAPSED -> Toast.makeText(appContext, "STATE_COLLAPSED", Toast.LENGTH_SHORT).show()
-                    BottomSheetBehavior.STATE_EXPANDED -> Toast.makeText(appContext, "STATE_EXPANDED", Toast.LENGTH_SHORT).show()
-                    BottomSheetBehavior.STATE_DRAGGING -> Toast.makeText(appContext, "STATE_DRAGGING", Toast.LENGTH_SHORT).show()
-                    BottomSheetBehavior.STATE_SETTLING -> Toast.makeText(appContext, "STATE_SETTLING", Toast.LENGTH_SHORT).show()
-                    BottomSheetBehavior.STATE_HIDDEN -> Toast.makeText(appContext, "STATE_HIDDEN", Toast.LENGTH_SHORT).show()
-                    else -> Toast.makeText(appContext, "OTHER_STATE", Toast.LENGTH_SHORT).show()
-                }
+//                when (newState) {
+//                    BottomSheetBehavior.STATE_COLLAPSED -> Toast.makeText(appContext, "STATE_COLLAPSED", Toast.LENGTH_SHORT).show()
+//                    BottomSheetBehavior.STATE_EXPANDED -> Toast.makeText(appContext, "STATE_EXPANDED", Toast.LENGTH_SHORT).show()
+//                    BottomSheetBehavior.STATE_DRAGGING -> Toast.makeText(appContext, "STATE_DRAGGING", Toast.LENGTH_SHORT).show()
+//                    BottomSheetBehavior.STATE_SETTLING -> Toast.makeText(appContext, "STATE_SETTLING", Toast.LENGTH_SHORT).show()
+//                    BottomSheetBehavior.STATE_HIDDEN -> Toast.makeText(appContext, "STATE_HIDDEN", Toast.LENGTH_SHORT).show()
+//                    else -> Toast.makeText(appContext, "OTHER_STATE", Toast.LENGTH_SHORT).show()
+//                }
             }
         })
 
@@ -99,6 +108,14 @@ class BusNearbyFragment : Fragment(), OnMapReadyCallback {
 
 
         //Bottom Sheet Dialog Ends
+
+        // Bus Arrival Api
+        binding.inclBusNearbyBottomSheetDialog.rvBusStops.layoutManager = LinearLayoutManager(appContext)
+        binding.inclBusNearbyBottomSheetDialog.rvBusStops.setHasFixedSize(true)
+
+        busStopAdapter = BusNearbyBusStopAdapter(listOf()) { busStop: BusArrival -> busStopClicked(busStop)  }
+        binding.inclBusNearbyBottomSheetDialog.rvBusStops.adapter = busStopAdapter
+
 
         // Inflate the layout for this fragment
         return binding.root
@@ -126,6 +143,8 @@ class BusNearbyFragment : Fragment(), OnMapReadyCallback {
 
         return super.onOptionsItemSelected(item)
     }
+
+    /* Google Map Related Start */
 
     override fun onMapReady(googleMap: GoogleMap) {
         mMap = googleMap
@@ -177,6 +196,65 @@ class BusNearbyFragment : Fragment(), OnMapReadyCallback {
         }
     }
 
+    /* Google Map Related Ends*/
+
+    /* BusArrival Api Related Starts */
+    private fun loadNearbyBusAndUpdateList() {
+        // Launch Kotlin Coroutine on Android's main thread
+        // Note: better not to use GlobalScope, see:
+        // https://kotlin.github.io/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines/-coroutine-scope/index.html
+        // An even better solution would be to use the Android livecycle-aware viewmodel
+        // instead of attaching the scope to the activity.
+        GlobalScope.launch(Dispatchers.Main) {
+            try {
+                // Execute web request through coroutine call adapter & retrofit
+                val webResponse = WebAccess.busArrivalApi.getBusArrivalAsync(listOfNearbyBusStops.get(0)).await()
+
+                if (webResponse.isSuccessful) {
+                    // Get the returned & parsed JSON from the web response.
+                    // Type specified explicitly here to make it clear that we already
+                    // get parsed contents.
+                    val busList: List<BusArrival>? = webResponse.body()
+                    Timber.i(busList.toString())
+                    // Assign the list to the recycler view. If partsList is null,
+                    // assign an empty list to the adapter.
+                    busStopAdapter.busArrivalList = busList ?: listOf()
+                    // Inform recycler view that data has changed.
+                    // Makes sure the view re-renders itself
+                    busStopAdapter.notifyDataSetChanged()
+                } else {
+                    // Print error information to the console
+                    Timber.i("Error ${webResponse.code()}")
+                }
+            } catch (e: IOException) {
+                // Error with network request
+                Timber.i("Exception " + e.printStackTrace())
+            }
+        }
+    }
+
+
+    private fun busStopClicked(busStop : BusArrival) {
+        // Test code to add a new item to the list
+        // Will be replaced with UI function soon
+        //val newPart = PartData(Random.nextLong(0, 999999), "Infrared sensor")
+        //addPart(newPart)
+        //return
+
+//        Toast.makeText(this, "Clicked: ${partItem.itemName}", Toast.LENGTH_LONG).show()
+//
+//        // Launch second activity, pass part ID as string parameter
+//        val showDetailActivityIntent = Intent(this, PartDetailActivity::class.java)
+//        //showDetailActivityIntent.putExtra(Intent.EXTRA_TEXT, partItem.id.toString())
+//        showDetailActivityIntent.putExtra("ItemId", partItem.id)
+//        showDetailActivityIntent.putExtra("ItemName", partItem.itemName)
+//        startActivity(showDetailActivityIntent)
+    }
+
+    /* BusArrival Api Related Ends */
+
+
+    // Permissioning
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         when(requestCode){
             REQUEST_CODE -> {

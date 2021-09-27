@@ -1,29 +1,34 @@
 package com.acn.sgbustimer.model
 
+import com.squareup.moshi.Json
+import com.squareup.moshi.JsonClass
+
+@JsonClass(generateAdapter = true)
 data class BusArrival (
+    @Json(name="odata.metadata")
     val odataMetadata: String,
-    val busStopCode: String,
-    val services: List<Service>
+    val BusStopCode: String,
+    val Services: List<Service>
 )
 
 data class Service (
-    val serviceNo: String,
-    val operator: Operator,
-    val nextBus: NextBus,
-    val nextBus2: NextBus,
-    val nextBus3: NextBus
+    val ServiceNo: String,
+    val Operator: Operator,
+    val NextBus: NextBus,
+    val NextBus2: NextBus,
+    val NextBus3: NextBus
 )
 
 data class NextBus (
-    val originCode: String,
-    val destinationCode: String,
-    val estimatedArrival: String,
-    val latitude: String,
-    val longitude: String,
-    val visitNumber: String,
-    val load: Load,
-    val feature: Feature,
-    val type: Type
+    val OriginCode: String,
+    val DestinationCode: String,
+    val EstimatedArrival: String,
+    val Latitude: String,
+    val Longitude: String,
+    val VisitNumber: String,
+    val Load: Load,
+    val Feature: Feature,
+    val Type: Type
 )
 
 enum class Feature {
