@@ -25,7 +25,7 @@ class BusNearbyBusStopAdapter(var busArrivalList: List<BusArrival>, private val 
 
     inner class BusStopViewHolder(private val binding: BusNearbyBusStopListBinding) : RecyclerView.ViewHolder(binding.root) {
         fun bind(busArrival: BusArrival, clickListener: (BusArrival) -> Unit) {
-            binding.tvBusStopCode.text = busArrival.BusStopCode
+            binding.tvBusStopCode.text = busArrival.busStopCode
             binding.root.setOnClickListener { clickListener(busArrival) }
         }
     }

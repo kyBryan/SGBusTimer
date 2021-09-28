@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.location.Location
 import android.os.Bundle
+import android.util.Log
 import android.view.*
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.fragment.app.Fragment
@@ -13,10 +14,12 @@ import androidx.databinding.DataBindingUtil
 import com.acn.sgbustimer.R
 import com.acn.sgbustimer.databinding.BusNearbyViewFragmentBinding
 import androidx.core.app.ActivityCompat
+import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.acn.sgbustimer.model.BusArrival
 import com.acn.sgbustimer.network.WebAccess
 import com.acn.sgbustimer.util.Constant
+import com.acn.sgbustimer.viewmodel.BusNearbyViewModel
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -28,11 +31,8 @@ import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.libraries.places.api.Places;
 import com.google.android.libraries.places.api.net.PlacesClient
 import com.google.android.material.bottomsheet.BottomSheetBehavior
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 import timber.log.Timber
-import java.io.IOException
+import java.util.*
 
 
 class BusNearbyFragment : Fragment(), OnMapReadyCallback {
@@ -60,6 +60,11 @@ class BusNearbyFragment : Fragment(), OnMapReadyCallback {
 
     // Recycle View
     private lateinit var busStopAdapter: BusNearbyBusStopAdapter
+
+    // View Model
+    val busArrivalVM: BusNearbyViewModel by lazy {
+        ViewModelProvider(this).get(BusNearbyViewModel::class.java)
+    }
 
 
     override fun onCreateView(
@@ -109,13 +114,32 @@ class BusNearbyFragment : Fragment(), OnMapReadyCallback {
 
         //Bottom Sheet Dialog Ends
 
+
         // Bus Arrival Api
+
+
         binding.inclBusNearbyBottomSheetDialog.rvBusStops.layoutManager = LinearLayoutManager(appContext)
         binding.inclBusNearbyBottomSheetDialog.rvBusStops.setHasFixedSize(true)
 
         busStopAdapter = BusNearbyBusStopAdapter(listOf()) { busStop: BusArrival -> busStopClicked(busStop)  }
         binding.inclBusNearbyBottomSheetDialog.rvBusStops.adapter = busStopAdapter
 
+        busArrivalVM.refreshBusArrival(listOfNearbyBusStops)
+        busArrivalVM.listOfBusArrivalLiveData.observe(viewLifecycleOwner){ response ->
+            if (response == null){
+                Timber.i("Response is Null")
+                return@observe
+            }
+
+            Timber.i("Print Response Service No: ${response[0]!!.services[0].serviceNo}")
+
+            busStopAdapter.busArrivalList = response as List<BusArrival>
+            // Inform recycler view that data has changed.
+            // Makes sure the view re-renders itself
+            busStopAdapter.notifyDataSetChanged()
+        }
+
+        //loadNearbyBusAndUpdateList()
 
         // Inflate the layout for this fragment
         return binding.root
@@ -199,41 +223,6 @@ class BusNearbyFragment : Fragment(), OnMapReadyCallback {
     /* Google Map Related Ends*/
 
     /* BusArrival Api Related Starts */
-    private fun loadNearbyBusAndUpdateList() {
-        // Launch Kotlin Coroutine on Android's main thread
-        // Note: better not to use GlobalScope, see:
-        // https://kotlin.github.io/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines/-coroutine-scope/index.html
-        // An even better solution would be to use the Android livecycle-aware viewmodel
-        // instead of attaching the scope to the activity.
-        GlobalScope.launch(Dispatchers.Main) {
-            try {
-                // Execute web request through coroutine call adapter & retrofit
-                val webResponse = WebAccess.busArrivalApi.getBusArrivalAsync(listOfNearbyBusStops.get(0)).await()
-
-                if (webResponse.isSuccessful) {
-                    // Get the returned & parsed JSON from the web response.
-                    // Type specified explicitly here to make it clear that we already
-                    // get parsed contents.
-                    val busList: List<BusArrival>? = webResponse.body()
-                    Timber.i(busList.toString())
-                    // Assign the list to the recycler view. If partsList is null,
-                    // assign an empty list to the adapter.
-                    busStopAdapter.busArrivalList = busList ?: listOf()
-                    // Inform recycler view that data has changed.
-                    // Makes sure the view re-renders itself
-                    busStopAdapter.notifyDataSetChanged()
-                } else {
-                    // Print error information to the console
-                    Timber.i("Error ${webResponse.code()}")
-                }
-            } catch (e: IOException) {
-                // Error with network request
-                Timber.i("Exception " + e.printStackTrace())
-            }
-        }
-    }
-
-
     private fun busStopClicked(busStop : BusArrival) {
         // Test code to add a new item to the list
         // Will be replaced with UI function soon
@@ -249,6 +238,8 @@ class BusNearbyFragment : Fragment(), OnMapReadyCallback {
 //        showDetailActivityIntent.putExtra("ItemId", partItem.id)
 //        showDetailActivityIntent.putExtra("ItemName", partItem.itemName)
 //        startActivity(showDetailActivityIntent)
+
+        Timber.i("Clicked on BusStop: ${busStop.busStopCode}")
     }
 
     /* BusArrival Api Related Ends */
