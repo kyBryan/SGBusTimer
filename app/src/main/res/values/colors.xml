@@ -24,5 +24,8 @@
     <!-- Fragments -->
     <color name="toolBarColorYellow">#ffcb38</color>
 
+    <!-- Bus No Pills -->
+    <color name="busNoPillColor">#5c6977</color>
+
 
 </resources>

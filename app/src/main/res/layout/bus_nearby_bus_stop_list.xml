@@ -9,19 +9,117 @@
             type="com.acn.sgbustimer.model.BusArrival" />
     </data>
 
-<LinearLayout
-    android:orientation="vertical"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:padding="16dp">
-
-    <TextView
-        android:id="@+id/tvBusStopCode"
-        android:layout_width="wrap_content"
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textSize="20sp"
-        tools:text="12345" />
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <TextView
+            android:id="@+id/tvBusStopCode"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/roboto"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="12345" />
+
+        <TextView
+            android:id="@+id/tvBusNo1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:layout_marginEnd="10dp"
+            android:background="@color/busNoPillColor"
+            android:fontFamily="@font/roboto"
+            android:gravity="center_horizontal|center_vertical"
+            android:padding="2dp"
+            android:textColor="@color/white"
+            app:layout_constraintEnd_toStartOf="@+id/tvBusNo2"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintHorizontal_chainStyle="packed"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/tvBusStopCode"
+            tools:text="65" />
+
+        <TextView
+            android:id="@+id/tvBusNo2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="10dp"
+            android:background="@color/busNoPillColor"
+            android:fontFamily="@font/roboto"
+            android:gravity="center_horizontal|center_vertical"
+            android:padding="2dp"
+            android:textColor="@color/white"
+            app:layout_constraintBaseline_toBaselineOf="@+id/tvBusNo1"
+            app:layout_constraintEnd_toStartOf="@+id/tvBusNo3"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintStart_toEndOf="@+id/tvBusNo1"
+            tools:text="40" />
+
+        <TextView
+            android:id="@+id/tvBusNo3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="10dp"
+            android:background="@color/busNoPillColor"
+            android:fontFamily="@font/roboto"
+            android:gravity="center_horizontal|center_vertical"
+            android:padding="2dp"
+            android:textColor="@color/white"
+            app:layout_constraintBaseline_toBaselineOf="@+id/tvBusNo1"
+            app:layout_constraintEnd_toStartOf="@+id/tvBusNo4"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toEndOf="@+id/tvBusNo2"
+            tools:text="45" />
+
+        <TextView
+            android:id="@+id/tvBusNo4"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="10dp"
+            android:background="@color/busNoPillColor"
+            android:fontFamily="@font/roboto"
+            android:gravity="center_horizontal|center_vertical"
+            android:padding="2dp"
+            android:textColor="@color/white"
+            app:layout_constraintBaseline_toBaselineOf="@+id/tvBusNo1"
+            app:layout_constraintEnd_toStartOf="@+id/tvBusNo5"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toEndOf="@+id/tvBusNo3"
+            tools:text="55" />
+
+        <TextView
+            android:id="@+id/tvBusNo5"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="10dp"
+            android:background="@color/busNoPillColor"
+            android:fontFamily="@font/roboto"
+            android:gravity="center_horizontal|center_vertical"
+            android:padding="2dp"
+            android:textColor="@color/white"
+            app:layout_constraintBaseline_toBaselineOf="@+id/tvBusNo1"
+            app:layout_constraintEnd_toStartOf="@+id/tvMoreBus"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toEndOf="@+id/tvBusNo4"
+            tools:text="78" />
+
+        <TextView
+            android:id="@+id/tvMoreBus"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/roboto"
+            android:textSize="11sp"
+            app:layout_constraintBaseline_toBaselineOf="@+id/tvBusNo1"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toEndOf="@+id/tvBusNo5"
+            tools:text="+6 more buses" />
 
 
-</LinearLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>
