@@ -56,7 +56,7 @@ class BusNearbyFragment : Fragment(), OnMapReadyCallback {
     private lateinit var bottomSheetBehavior: BottomSheetBehavior<ConstraintLayout>
 
     // Data
-    private var listOfNearbyBusStops: MutableList<String> = mutableListOf("70211")
+    private var listOfNearbyBusStops: MutableList<String> = mutableListOf("70211", "70309", "66369")
 
     // Recycle View
     private lateinit var busStopAdapter: BusNearbyBusStopAdapter
@@ -121,7 +121,7 @@ class BusNearbyFragment : Fragment(), OnMapReadyCallback {
         binding.inclBusNearbyBottomSheetDialog.rvBusStops.layoutManager = LinearLayoutManager(appContext)
         binding.inclBusNearbyBottomSheetDialog.rvBusStops.setHasFixedSize(true)
 
-        busStopAdapter = BusNearbyBusStopAdapter(listOf()) { busStop: BusArrival -> busStopClicked(busStop)  }
+        busStopAdapter = BusNearbyBusStopAdapter(listOf(), appContext) { busStop: BusArrival -> busStopClicked(busStop)  }
         binding.inclBusNearbyBottomSheetDialog.rvBusStops.adapter = busStopAdapter
 
         busArrivalVM.refreshBusArrival(listOfNearbyBusStops)

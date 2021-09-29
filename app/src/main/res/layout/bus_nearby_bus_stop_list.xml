@@ -4,12 +4,14 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <data>
+
         <variable
-            name="busStop"
+            name="busArrivalModel"
             type="com.acn.sgbustimer.model.BusArrival" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/itemGroupCL"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
@@ -37,88 +39,110 @@
             android:gravity="center_horizontal|center_vertical"
             android:padding="2dp"
             android:textColor="@color/white"
+            android:visibility="gone"
             app:layout_constraintEnd_toStartOf="@+id/tvBusNo2"
             app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintHorizontal_chainStyle="packed"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/tvBusStopCode"
-            tools:text="65" />
+            tools:text="65"
+            tools:visibility="visible" />
 
         <TextView
             android:id="@+id/tvBusNo2"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
             android:layout_marginEnd="10dp"
             android:background="@color/busNoPillColor"
             android:fontFamily="@font/roboto"
             android:gravity="center_horizontal|center_vertical"
             android:padding="2dp"
             android:textColor="@color/white"
+            android:visibility="gone"
             app:layout_constraintBaseline_toBaselineOf="@+id/tvBusNo1"
             app:layout_constraintEnd_toStartOf="@+id/tvBusNo3"
             app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintStart_toEndOf="@+id/tvBusNo1"
-            tools:text="40" />
+            app:layout_constraintTop_toBottomOf="@+id/tvBusStopCode"
+            tools:text="40"
+            tools:visibility="visible" />
 
         <TextView
             android:id="@+id/tvBusNo3"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
             android:layout_marginEnd="10dp"
             android:background="@color/busNoPillColor"
             android:fontFamily="@font/roboto"
             android:gravity="center_horizontal|center_vertical"
             android:padding="2dp"
             android:textColor="@color/white"
+            android:visibility="gone"
             app:layout_constraintBaseline_toBaselineOf="@+id/tvBusNo1"
             app:layout_constraintEnd_toStartOf="@+id/tvBusNo4"
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toEndOf="@+id/tvBusNo2"
-            tools:text="45" />
+            app:layout_constraintTop_toBottomOf="@+id/tvBusStopCode"
+            tools:text="45"
+            tools:visibility="visible" />
 
         <TextView
             android:id="@+id/tvBusNo4"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
             android:layout_marginEnd="10dp"
             android:background="@color/busNoPillColor"
             android:fontFamily="@font/roboto"
             android:gravity="center_horizontal|center_vertical"
             android:padding="2dp"
             android:textColor="@color/white"
+            android:visibility="gone"
             app:layout_constraintBaseline_toBaselineOf="@+id/tvBusNo1"
             app:layout_constraintEnd_toStartOf="@+id/tvBusNo5"
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toEndOf="@+id/tvBusNo3"
-            tools:text="55" />
+            app:layout_constraintTop_toBottomOf="@+id/tvBusStopCode"
+            tools:text="55"
+            tools:visibility="visible" />
 
         <TextView
             android:id="@+id/tvBusNo5"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
             android:layout_marginEnd="10dp"
             android:background="@color/busNoPillColor"
             android:fontFamily="@font/roboto"
             android:gravity="center_horizontal|center_vertical"
             android:padding="2dp"
             android:textColor="@color/white"
+            android:visibility="gone"
             app:layout_constraintBaseline_toBaselineOf="@+id/tvBusNo1"
             app:layout_constraintEnd_toStartOf="@+id/tvMoreBus"
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toEndOf="@+id/tvBusNo4"
-            tools:text="78" />
+            app:layout_constraintTop_toBottomOf="@+id/tvBusStopCode"
+            tools:text="78"
+            tools:visibility="visible" />
 
         <TextView
             android:id="@+id/tvMoreBus"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
             android:fontFamily="@font/roboto"
             android:textSize="11sp"
+            android:visibility="gone"
             app:layout_constraintBaseline_toBaselineOf="@+id/tvBusNo1"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toEndOf="@+id/tvBusNo5"
-            tools:text="+6 more buses" />
+            app:layout_constraintTop_toBottomOf="@+id/tvBusStopCode"
+            tools:text="+6 more buses"
+            tools:visibility="visible" />
 
 
     </androidx.constraintlayout.widget.ConstraintLayout>
