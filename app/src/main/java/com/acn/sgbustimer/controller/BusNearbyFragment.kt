@@ -231,9 +231,20 @@ class BusNearbyFragment : Fragment(), OnMapReadyCallback {
     private fun busStopClicked(busStop : BusArrival) {
 
         Timber.i("Clicked on BusStop: ${busStop.busStopCode}")
-//        if(view != null){
-//            view?.findNavController()?.navigate(BusNearbyFragmentDirections.actionBusNearbyFragmentToBusTimeFragment(busStop))
-//        }
+        val busStopCode = busStop.busStopCode
+        var busServiceNoList: MutableList<String> = mutableListOf()
+        var busServiceNextTime: MutableList<String> = mutableListOf()
+        var busServiceNextTimeTwo: MutableList<String> = mutableListOf()
+
+        for(i in 0 until busStop.services.count()){
+            busServiceNoList.add(busStop.services[i].serviceNo)
+            busServiceNextTime.add(busStop.services[i].nextBus.estimatedArrival)
+            busServiceNextTimeTwo.add(busStop.services[i].nextBus2.estimatedArrival)
+        }
+
+        view?.let{
+            it.findNavController().navigate(BusNearbyFragmentDirections.actionBusNearbyFragmentToBusTimeFragment(busStopCode, busServiceNoList.toTypedArray(), busServiceNextTime.toTypedArray(), busServiceNextTimeTwo.toTypedArray()))
+        }
     }
 
     /* BusStop Item Clicked function Ends */

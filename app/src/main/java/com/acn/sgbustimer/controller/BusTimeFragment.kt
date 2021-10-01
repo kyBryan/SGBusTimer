@@ -21,10 +21,12 @@ class BusTimeFragment : Fragment() {
 
         val binding = DataBindingUtil.inflate<BusTimeFragmentBinding>(inflater, R.layout.bus_time_fragment, container, false)
 
-//        var args = BusTimeFragmentArgs.fromBundle(requireArguments())
-//
-//        binding.tvTemp.text = args.mBusArrival.services[0].serviceNo
+        arguments?.let {
+            val args = BusTimeFragmentArgs.fromBundle(it)
 
+            binding.tvTemp.text = args.argsBusStopServiceNo?.get(0)
+
+        }
 
         // Inflate the layout for this fragment
         return binding.root
