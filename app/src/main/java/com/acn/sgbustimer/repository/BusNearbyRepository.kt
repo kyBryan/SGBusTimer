@@ -9,7 +9,9 @@ class BusNearbyRepository {
         val request = WebAccess.busArrivalApiClient.getBusArrivalAsync(busStopCode)
 
         if(request.isSuccessful){
-            return request.body()!!
+            request.body().let {
+                return it
+            }
         }
 
         return null

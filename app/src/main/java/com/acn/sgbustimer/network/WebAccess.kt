@@ -10,6 +10,7 @@ import retrofit2.converter.moshi.MoshiConverterFactory
 
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import timber.log.Timber
 
 
 object WebAccess {

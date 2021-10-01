@@ -10,8 +10,8 @@ class Constant {
             LatLng(1.4711752956682944, 104.00449679832388) // NE bounds
         )
 
-        val DATAMALL_API_KEY = "r6LVWluBQXC0hv3Hjc3OOg=="
+        const val DATAMALL_API_KEY = "r6LVWluBQXC0hv3Hjc3OOg=="
 
-        val DATAMALL_API = "http://datamall2.mytransport.sg/ltaodataservice/"
+        const val DATAMALL_API = "http://datamall2.mytransport.sg/ltaodataservice/"
     }
 }

@@ -15,6 +15,7 @@ import com.acn.sgbustimer.R
 import com.acn.sgbustimer.databinding.BusNearbyViewFragmentBinding
 import androidx.core.app.ActivityCompat
 import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.acn.sgbustimer.model.BusArrival
 import com.acn.sgbustimer.network.WebAccess
@@ -80,9 +81,9 @@ class BusNearbyFragment : Fragment(), OnMapReadyCallback {
 
         userCurrentLocation()
 
-        Places.initialize(appContext, getString(R.string.google_maps_key));
-
-        placesClient = Places.createClient(appContext)
+        // Google Place SDK, Testing
+//        Places.initialize(appContext, getString(R.string.google_maps_key));
+//        placesClient = Places.createClient(appContext)
 
         // Map End
 
@@ -98,6 +99,7 @@ class BusNearbyFragment : Fragment(), OnMapReadyCallback {
             }
 
             override fun onStateChanged(bottomSheet: View, newState: Int) {
+                // handle state changes
 //                when (newState) {
 //                    BottomSheetBehavior.STATE_COLLAPSED -> Toast.makeText(appContext, "STATE_COLLAPSED", Toast.LENGTH_SHORT).show()
 //                    BottomSheetBehavior.STATE_EXPANDED -> Toast.makeText(appContext, "STATE_EXPANDED", Toast.LENGTH_SHORT).show()
@@ -111,11 +113,8 @@ class BusNearbyFragment : Fragment(), OnMapReadyCallback {
 
         bottomSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
 
-
         //Bottom Sheet Dialog Ends
 
-
-        // Bus Arrival Api
 
 
         binding.inclBusNearbyBottomSheetDialog.rvBusStops.layoutManager = LinearLayoutManager(appContext)
@@ -124,22 +123,24 @@ class BusNearbyFragment : Fragment(), OnMapReadyCallback {
         busStopAdapter = BusNearbyBusStopAdapter(listOf(), appContext) { busStop: BusArrival -> busStopClicked(busStop)  }
         binding.inclBusNearbyBottomSheetDialog.rvBusStops.adapter = busStopAdapter
 
+        // Bus Arrival Api
         busArrivalVM.refreshBusArrival(listOfNearbyBusStops)
+
         busArrivalVM.listOfBusArrivalLiveData.observe(viewLifecycleOwner){ response ->
             if (response == null){
                 Timber.i("Response is Null")
                 return@observe
             }
 
-            Timber.i("Print Response Service No: ${response[0]!!.services[0].serviceNo}")
+            Timber.i("Print Response Service No: ${response[0]?.services?.get(0)?.serviceNo}")
 
             busStopAdapter.busArrivalList = response as List<BusArrival>
             // Inform recycler view that data has changed.
             // Makes sure the view re-renders itself
             busStopAdapter.notifyDataSetChanged()
+
         }
 
-        //loadNearbyBusAndUpdateList()
 
         // Inflate the layout for this fragment
         return binding.root
@@ -156,12 +157,12 @@ class BusNearbyFragment : Fragment(), OnMapReadyCallback {
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         super.onCreateOptionsMenu(menu, inflater)
-        inflater?.inflate(R.menu.menu, menu)
+        inflater.inflate(R.menu.menu, menu)
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
 
-        when (item!!.itemId) {
+        when (item.itemId) {
             R.id.menuHome -> activity?.onBackPressed()
         }
 
@@ -177,11 +178,13 @@ class BusNearbyFragment : Fragment(), OnMapReadyCallback {
         // Use current location if location is turned on and permission valid
         if(currentLocation != null) {
             Timber.i("user latlong is ${currentLocation}")
-            val userlatLng = LatLng(currentLocation!!.latitude, currentLocation!!.longitude)
-            val markerOptions = MarkerOptions().position(userlatLng).title("I Am Here!")
-            mMap.animateCamera(CameraUpdateFactory.newLatLng(userlatLng))
-            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(userlatLng, 18f))
-            mMap.addMarker(markerOptions)
+            currentLocation.let {
+                val userlatLng = LatLng(currentLocation.latitude, currentLocation.longitude)
+                val markerOptions = MarkerOptions().position(userlatLng).title("I Am Here!")
+                mMap.animateCamera(CameraUpdateFactory.newLatLng(userlatLng))
+                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(userlatLng, 18f))
+                mMap.addMarker(markerOptions)
+            }
         }
         else {
             // else center to Singapore map
@@ -203,6 +206,7 @@ class BusNearbyFragment : Fragment(), OnMapReadyCallback {
 
     // Get User Current location
     private fun userCurrentLocation(){
+        // Location Permission Checks
         if (ActivityCompat.checkSelfPermission(appContext, Manifest.permission.ACCESS_FINE_LOCATION)
             != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(appContext,Manifest.permission.ACCESS_COARSE_LOCATION)
             != PackageManager.PERMISSION_GRANTED)
@@ -211,7 +215,8 @@ class BusNearbyFragment : Fragment(), OnMapReadyCallback {
             return
         }
 
-        val task = fusedLocationProviderClient!!.lastLocation
+
+        val task = fusedLocationProviderClient.lastLocation
         task.addOnSuccessListener { location ->
             if (location != null){
                 currentLocation = location
@@ -222,34 +227,23 @@ class BusNearbyFragment : Fragment(), OnMapReadyCallback {
 
     /* Google Map Related Ends*/
 
-    /* BusArrival Api Related Starts */
+    /* BusStop Item Clicked function Starts */
     private fun busStopClicked(busStop : BusArrival) {
-        // Test code to add a new item to the list
-        // Will be replaced with UI function soon
-        //val newPart = PartData(Random.nextLong(0, 999999), "Infrared sensor")
-        //addPart(newPart)
-        //return
-
-//        Toast.makeText(this, "Clicked: ${partItem.itemName}", Toast.LENGTH_LONG).show()
-//
-//        // Launch second activity, pass part ID as string parameter
-//        val showDetailActivityIntent = Intent(this, PartDetailActivity::class.java)
-//        //showDetailActivityIntent.putExtra(Intent.EXTRA_TEXT, partItem.id.toString())
-//        showDetailActivityIntent.putExtra("ItemId", partItem.id)
-//        showDetailActivityIntent.putExtra("ItemName", partItem.itemName)
-//        startActivity(showDetailActivityIntent)
 
         Timber.i("Clicked on BusStop: ${busStop.busStopCode}")
+//        if(view != null){
+//            view?.findNavController()?.navigate(BusNearbyFragmentDirections.actionBusNearbyFragmentToBusTimeFragment(busStop))
+//        }
     }
 
-    /* BusArrival Api Related Ends */
+    /* BusStop Item Clicked function Ends */
 
 
     // Permissioning
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         when(requestCode){
             REQUEST_CODE -> {
-                if (grantResults.size > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED){
+                if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED){
                     userCurrentLocation()
                 }
             }

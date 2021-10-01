@@ -30,7 +30,7 @@ class BusNearbyBottomSheetDialog : BottomSheetDialogFragment() {
         savedInstanceState: Bundle?
     ): View? {
 
-        var binding = DataBindingUtil.inflate<BusNearbyBottomSheetDialogBinding>(inflater, R.layout.bus_nearby_bottom_sheet_dialog, container, false)
+        val binding = DataBindingUtil.inflate<BusNearbyBottomSheetDialogBinding>(inflater, R.layout.bus_nearby_bottom_sheet_dialog, container, false)
 
 
         return binding.root

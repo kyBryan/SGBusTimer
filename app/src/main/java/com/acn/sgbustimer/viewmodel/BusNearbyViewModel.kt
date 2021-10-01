@@ -24,6 +24,7 @@ class BusNearbyViewModel: ViewModel() {
 
     fun refreshBusArrival(listOfBusStopCodes: List<String>){
         viewModelScope.launch {
+
             val listOfResponse: MutableList<BusArrival?> = mutableListOf()
             for (busStopCode in listOfBusStopCodes) {
                 val response = repository.getBusArrivalAsync(busStopCode)
