@@ -56,16 +56,16 @@ class BusNearbyFragment : Fragment(), OnMapReadyCallback {
     // Bottom Sheet
     private lateinit var bottomSheetBehavior: BottomSheetBehavior<ConstraintLayout>
 
-    // Data
-    private var listOfNearbyBusStops: MutableList<String> = mutableListOf("70211", "70309", "66369")
-
     // Recycle View
     private lateinit var busStopAdapter: BusNearbyBusStopAdapter
 
     // View Model
-    val busArrivalVM: BusNearbyViewModel by lazy {
+    private val busArrivalVM: BusNearbyViewModel by lazy {
         ViewModelProvider(this).get(BusNearbyViewModel::class.java)
     }
+
+    // Data list of nearby bus stop codes
+    private val arrListBusStopCodes =  ArrayList<String>()
 
 
     override fun onCreateView(
@@ -124,11 +124,12 @@ class BusNearbyFragment : Fragment(), OnMapReadyCallback {
         binding.inclBusNearbyBottomSheetDialog.rvBusStops.adapter = busStopAdapter
 
         // Bus Arrival Api
-        busArrivalVM.refreshBusArrival(listOfNearbyBusStops)
+        arrListBusStopCodes.addAll(listOf("70211", "70309", "66369"))
+
 
         busArrivalVM.listOfBusArrivalLiveData.observe(viewLifecycleOwner){ response ->
             if (response == null){
-                Timber.i("Response is Null")
+                Timber.i("Response is Null listOfBusArrivalLiveData")
                 return@observe
             }
 
@@ -140,6 +141,8 @@ class BusNearbyFragment : Fragment(), OnMapReadyCallback {
             busStopAdapter.notifyDataSetChanged()
 
         }
+
+        busArrivalVM.setListOfNearbyBusStop(arrListBusStopCodes)
 
 
         // Inflate the layout for this fragment

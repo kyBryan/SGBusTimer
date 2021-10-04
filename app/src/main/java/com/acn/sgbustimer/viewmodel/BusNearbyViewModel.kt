@@ -1,38 +1,45 @@
 package com.acn.sgbustimer.viewmodel
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.*
 import com.acn.sgbustimer.model.BusArrival
-import com.acn.sgbustimer.repository.BusNearbyRepository
+import com.acn.sgbustimer.repository.BusArrivalRepository
 import kotlinx.coroutines.launch
 
-class BusNearbyViewModel: ViewModel() {
+class BusNearbyViewModel(): ViewModel() {
 
 
-    private val repository =  BusNearbyRepository()
+    private val repository =  BusArrivalRepository()
 
-    private val _listOfBusArrivalLiveData = MutableLiveData<List<BusArrival?>>()
-    val listOfBusArrivalLiveData: LiveData<List<BusArrival?>>
+    // Data
+    private val _arrListOfNearbyBusStopCodes = MutableLiveData<ArrayList<String>>()
+//    val arrListOfNearbyBusStopCodes: LiveData<ArrayList<String>>
+//        get() = _arrListOfNearbyBusStopCodes
+
+
+//    private val _listOfBusArrivalLiveData = MutableLiveData<List<BusArrival?>>()
+//    val listOfBusArrivalLiveData: LiveData<List<BusArrival?>>
+//        get() = _listOfBusArrivalLiveData
+
+    private val _listOfBusArrivalLiveData = Transformations
+        .switchMap(_arrListOfNearbyBusStopCodes) { listOfBSC ->
+            repository.getBusArrival(listOfBSC)
+        }
+    val listOfBusArrivalLiveData: LiveData<List<BusArrival>>
         get() = _listOfBusArrivalLiveData
+
 
 
     init {
 
     }
 
-    fun refreshBusArrival(listOfBusStopCodes: List<String>){
-        viewModelScope.launch {
+//    fun fetchBusArrival(arrListBSC: ArrayList<String>): LiveData<List<BusArrival>> {
+//        //val response = repository.getBusArrival(arrListBSC)
+//
+//        //return response
+//    }
 
-            val listOfResponse: MutableList<BusArrival?> = mutableListOf()
-            for (busStopCode in listOfBusStopCodes) {
-                val response = repository.getBusArrivalAsync(busStopCode)
-
-                listOfResponse.add(response)
-            }
-
-            _listOfBusArrivalLiveData.postValue(listOfResponse)
-        }
+    fun setListOfNearbyBusStop(arrListBusStopCodes: ArrayList<String>) {
+        _arrListOfNearbyBusStopCodes.value = arrListBusStopCodes
     }
 }

@@ -8,5 +8,5 @@ import retrofit2.Call
 
 interface BusArrivalService {
     @GET("BusArrivalv2")
-    suspend fun getBusArrivalAsync(@Query("BusStopCode") busStopCode: String): Response<BusArrival>
+    suspend fun getBusArrivalApi(@Query("BusStopCode") busStopCode: String): Response<BusArrival>
 }

@@ -10,6 +10,7 @@ import retrofit2.converter.moshi.MoshiConverterFactory
 
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import retrofit2.create
 import timber.log.Timber
 
 
@@ -25,26 +26,20 @@ object WebAccess {
             chain.proceed(request)
         }.build()
 
-    val busArrivalService : BusArrivalService by lazy {
-        Log.i("BusArrivalApiClient","Creating retrofit client")
+    // Moshi Converter
+    val moshi = Moshi.Builder().addLast(KotlinJsonAdapterFactory()).build()
 
-        val moshi = Moshi.Builder().addLast(KotlinJsonAdapterFactory()).build()
-        val retrofit = Retrofit.Builder()
-            // The  address routes request from the Android emulator
-            // to the lta datamall of the host PC
-            .baseUrl(Constant.DATAMALL_API)
-            // Client
-            .client(httpClient)
-            // Moshi maps JSON to classes
-            .addConverterFactory(MoshiConverterFactory.create(moshi))
-            // The call adapter handles threads
-            //.addCallAdapterFactory(CoroutineCallAdapterFactory())
-            .build()
+    // Retrofit2 Builder
+    val rfDataMall = Retrofit.Builder()
+        .baseUrl(Constant.DATAMALL_API)
+        .client(httpClient)
+        .addConverterFactory(MoshiConverterFactory.create(moshi))
 
-        // Create Retrofit client
-        return@lazy retrofit.create(BusArrivalService::class.java)
+
+    // API Services
+    val busArrivalService: BusArrivalService by lazy {
+        rfDataMall.build()
+            .create(BusArrivalService::class.java)
     }
-
-    val busArrivalApiClient = ApiClient(busArrivalService)
 
 }
