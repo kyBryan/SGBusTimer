@@ -1,24 +1,32 @@
 package com.acn.sgbustimer.viewmodel
 
+import android.Manifest
+import android.app.Activity
+import android.app.Application
+import android.content.Context
+import android.content.pm.PackageManager
+import android.location.Location
+import androidx.core.app.ActivityCompat
 import androidx.lifecycle.*
 import com.acn.sgbustimer.model.BusArrival
 import com.acn.sgbustimer.repository.BusArrivalRepository
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
 import kotlinx.coroutines.launch
+import timber.log.Timber
 
-class BusNearbyViewModel(): ViewModel() {
+class BusNearbyViewModel(application: Application): AndroidViewModel(application) {
 
+    // Application
+    private val vmAppContext by lazy { getApplication<Application>().applicationContext }
+    private val _permissionGranted = MutableLiveData<Boolean>()
+    val permissionGranted: LiveData<Boolean>
+        get() = _permissionGranted
 
-    private val repository =  BusArrivalRepository()
 
     // Data
+    private val repository =  BusArrivalRepository()
     private val _arrListOfNearbyBusStopCodes = MutableLiveData<ArrayList<String>>()
-//    val arrListOfNearbyBusStopCodes: LiveData<ArrayList<String>>
-//        get() = _arrListOfNearbyBusStopCodes
-
-
-//    private val _listOfBusArrivalLiveData = MutableLiveData<List<BusArrival?>>()
-//    val listOfBusArrivalLiveData: LiveData<List<BusArrival?>>
-//        get() = _listOfBusArrivalLiveData
 
     private val _listOfBusArrivalLiveData = Transformations
         .switchMap(_arrListOfNearbyBusStopCodes) { listOfBSC ->
@@ -27,19 +35,48 @@ class BusNearbyViewModel(): ViewModel() {
     val listOfBusArrivalLiveData: LiveData<List<BusArrival>>
         get() = _listOfBusArrivalLiveData
 
+    
+    // Google Location
+    private val _fusedLocationProviderClient = MutableLiveData<FusedLocationProviderClient>()
+    val fusedLocationProviderClient: LiveData<FusedLocationProviderClient>
+        get() = _fusedLocationProviderClient
+
+    private val _currentLocation = MutableLiveData<Location>()
+    val currentLocation: LiveData<Location>
+        get() = _currentLocation
 
 
     init {
-
+        _permissionGranted.value = true
+        _fusedLocationProviderClient.value =
+                LocationServices.getFusedLocationProviderClient(vmAppContext)
     }
-
-//    fun fetchBusArrival(arrListBSC: ArrayList<String>): LiveData<List<BusArrival>> {
-//        //val response = repository.getBusArrival(arrListBSC)
-//
-//        //return response
-//    }
 
     fun setListOfNearbyBusStop(arrListBusStopCodes: ArrayList<String>) {
         _arrListOfNearbyBusStopCodes.value = arrListBusStopCodes
+    }
+
+    /* Google Map Related */
+    // Get User Current location
+    fun userCurrentLocation(){
+
+        if (ActivityCompat.checkSelfPermission(vmAppContext, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+             && ActivityCompat.checkSelfPermission(vmAppContext, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED
+        ) {
+            // Permission not granted
+            _permissionGranted.value = false
+            return
+        }
+
+        val task =  _fusedLocationProviderClient.value?.lastLocation
+        task?.let { taskIT ->
+            Timber.i("TaskIT Check")
+            taskIT.addOnSuccessListener { location ->
+                if (location != null) {
+                    _currentLocation.value = location
+//                    initMap()
+                }
+            }
+        }
     }
 }

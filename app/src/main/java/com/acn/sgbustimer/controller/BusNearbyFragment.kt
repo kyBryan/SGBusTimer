@@ -42,9 +42,7 @@ class BusNearbyFragment : Fragment(), OnMapReadyCallback {
     private lateinit var mMap: GoogleMap
 
     // Current Location
-    private lateinit var currentLocation: Location
-    private lateinit var fusedLocationProviderClient: FusedLocationProviderClient
-    val REQUEST_CODE = 101
+    private val REQUEST_CODE = 101
 
     // Google Places
     private lateinit var placesClient: PlacesClient
@@ -76,10 +74,18 @@ class BusNearbyFragment : Fragment(), OnMapReadyCallback {
 
         setHasOptionsMenu(true)
 
-        // Map Start
-        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(appActivity)
+        busArrivalVM.permissionGranted.observe(viewLifecycleOwner){ isPermissionGranted ->
+            if(!isPermissionGranted){
+                ActivityCompat.requestPermissions(appActivity, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), REQUEST_CODE)
+            }
+        }
 
-        userCurrentLocation()
+        busArrivalVM.currentLocation.observe(viewLifecycleOwner) {
+            initMap()
+        }
+
+        // Map Start
+        busArrivalVM.userCurrentLocation()
 
         // Google Place SDK, Testing
 //        Places.initialize(appContext, getString(R.string.google_maps_key));
@@ -88,7 +94,6 @@ class BusNearbyFragment : Fragment(), OnMapReadyCallback {
         // Map End
 
         //Bottom Sheet Dialog Start
-
         bottomSheetBehavior = BottomSheetBehavior.from(binding.inclBusNearbyBottomSheetDialog.busNearbyBottomSheet)
 
         bottomSheetBehavior.addBottomSheetCallback(object :
@@ -116,7 +121,7 @@ class BusNearbyFragment : Fragment(), OnMapReadyCallback {
         //Bottom Sheet Dialog Ends
 
 
-
+        // Recycler View for listing bus stops
         binding.inclBusNearbyBottomSheetDialog.rvBusStops.layoutManager = LinearLayoutManager(appContext)
         binding.inclBusNearbyBottomSheetDialog.rvBusStops.setHasFixedSize(true)
 
@@ -126,20 +131,17 @@ class BusNearbyFragment : Fragment(), OnMapReadyCallback {
         // Bus Arrival Api
         arrListBusStopCodes.addAll(listOf("70211", "70309", "66369"))
 
-
         busArrivalVM.listOfBusArrivalLiveData.observe(viewLifecycleOwner){ response ->
             if (response == null){
                 Timber.i("Response is Null listOfBusArrivalLiveData")
                 return@observe
             }
-
-            Timber.i("Print Response Service No: ${response[0]?.services?.get(0)?.serviceNo}")
+            Timber.i("Print Response Service No: ${response[0].services[0].serviceNo}")
 
             busStopAdapter.busArrivalList = response as List<BusArrival>
             // Inform recycler view that data has changed.
             // Makes sure the view re-renders itself
             busStopAdapter.notifyDataSetChanged()
-
         }
 
         busArrivalVM.setListOfNearbyBusStop(arrListBusStopCodes)
@@ -155,7 +157,10 @@ class BusNearbyFragment : Fragment(), OnMapReadyCallback {
         if (context is Activity) {
             Timber.i("Context is an instance of activity")
             appActivity = context
+
         }
+
+
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
@@ -179,10 +184,10 @@ class BusNearbyFragment : Fragment(), OnMapReadyCallback {
         mapPreSetup()
 
         // Use current location if location is turned on and permission valid
-        if(currentLocation != null) {
-            Timber.i("user latlong is ${currentLocation}")
-            currentLocation.let {
-                val userlatLng = LatLng(currentLocation.latitude, currentLocation.longitude)
+        if(busArrivalVM.currentLocation.value != null) {
+            Timber.i("user latlong is ${busArrivalVM.currentLocation.value}")
+            busArrivalVM.currentLocation.value?.let {
+                val userlatLng = LatLng(it.latitude, it.longitude)
                 val markerOptions = MarkerOptions().position(userlatLng).title("I Am Here!")
                 mMap.animateCamera(CameraUpdateFactory.newLatLng(userlatLng))
                 mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(userlatLng, 18f))
@@ -207,26 +212,7 @@ class BusNearbyFragment : Fragment(), OnMapReadyCallback {
         mapFragment.getMapAsync(this)
     }
 
-    // Get User Current location
-    private fun userCurrentLocation(){
-        // Location Permission Checks
-        if (ActivityCompat.checkSelfPermission(appContext, Manifest.permission.ACCESS_FINE_LOCATION)
-            != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(appContext,Manifest.permission.ACCESS_COARSE_LOCATION)
-            != PackageManager.PERMISSION_GRANTED)
-        {
-            ActivityCompat.requestPermissions(appActivity, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), REQUEST_CODE)
-            return
-        }
 
-
-        val task = fusedLocationProviderClient.lastLocation
-        task.addOnSuccessListener { location ->
-            if (location != null){
-                currentLocation = location
-                initMap()
-            }
-        }
-    }
 
     /* Google Map Related Ends*/
 
@@ -254,11 +240,23 @@ class BusNearbyFragment : Fragment(), OnMapReadyCallback {
 
 
     // Permissioning
+    private fun checkUserPermission(){
+        // Location Permission Checks
+        if (ActivityCompat.checkSelfPermission(appContext, Manifest.permission.ACCESS_FINE_LOCATION)
+            != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(appContext,
+                Manifest.permission.ACCESS_COARSE_LOCATION)
+            != PackageManager.PERMISSION_GRANTED)
+        {
+            ActivityCompat.requestPermissions(appActivity, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), REQUEST_CODE)
+            return
+        }
+
+    }
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         when(requestCode){
             REQUEST_CODE -> {
                 if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED){
-                    userCurrentLocation()
+                    busArrivalVM.userCurrentLocation()
                 }
             }
         }
