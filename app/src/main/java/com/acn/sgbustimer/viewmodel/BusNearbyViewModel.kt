@@ -5,6 +5,7 @@ import android.app.Activity
 import android.app.Application
 import android.content.Context
 import android.content.pm.PackageManager
+import android.graphics.Color
 import android.location.Location
 import androidx.core.app.ActivityCompat
 import androidx.lifecycle.*
@@ -12,6 +13,8 @@ import com.acn.sgbustimer.model.BusArrival
 import com.acn.sgbustimer.repository.BusArrivalRepository
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
+import com.google.android.gms.maps.model.CircleOptions
+import com.google.android.gms.maps.model.LatLng
 import kotlinx.coroutines.launch
 import timber.log.Timber
 
@@ -36,7 +39,7 @@ class BusNearbyViewModel(application: Application): AndroidViewModel(application
         get() = _listOfBusArrivalLiveData
 
     
-    // Google Location
+    // Google Map Location Objects
     private val _fusedLocationProviderClient = MutableLiveData<FusedLocationProviderClient>()
     val fusedLocationProviderClient: LiveData<FusedLocationProviderClient>
         get() = _fusedLocationProviderClient
@@ -44,6 +47,7 @@ class BusNearbyViewModel(application: Application): AndroidViewModel(application
     private val _currentLocation = MutableLiveData<Location>()
     val currentLocation: LiveData<Location>
         get() = _currentLocation
+
 
 
     init {
@@ -74,9 +78,32 @@ class BusNearbyViewModel(application: Application): AndroidViewModel(application
             taskIT.addOnSuccessListener { location ->
                 if (location != null) {
                     _currentLocation.value = location
-//                    initMap()
                 }
             }
         }
+    }
+
+    fun markerRadius(): CircleOptions {
+
+        _currentLocation.value?.let {
+            val circle: CircleOptions by lazy {
+                CircleOptions()
+                    .center(
+                        LatLng(
+                            it.latitude,
+                            it.longitude
+                        )
+                    )
+                    .radius(1000.0) // Meters
+                    .strokeWidth(10f)
+                    .strokeColor(Color.GREEN)
+                    .fillColor(Color.argb(128, 255, 0, 0))
+                    .clickable(true)
+            }
+
+            return circle
+        }
+
+        return CircleOptions()
     }
 }

@@ -19,6 +19,7 @@ import androidx.navigation.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.acn.sgbustimer.model.BusArrival
 import com.acn.sgbustimer.network.WebAccess
+import com.acn.sgbustimer.repository.BusArrivalRepository
 import com.acn.sgbustimer.util.Constant
 import com.acn.sgbustimer.viewmodel.BusNearbyViewModel
 import com.google.android.gms.location.FusedLocationProviderClient
@@ -27,6 +28,7 @@ import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
+import com.google.android.gms.maps.model.CircleOptions
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.libraries.places.api.Places;
@@ -43,9 +45,6 @@ class BusNearbyFragment : Fragment(), OnMapReadyCallback {
 
     // Current Location
     private val REQUEST_CODE = 101
-
-    // Google Places
-    private lateinit var placesClient: PlacesClient
 
     // Activity
     private lateinit var appActivity: Activity
@@ -74,6 +73,9 @@ class BusNearbyFragment : Fragment(), OnMapReadyCallback {
 
         setHasOptionsMenu(true)
 
+        // Set Google Map
+        initMap()
+
         busArrivalVM.permissionGranted.observe(viewLifecycleOwner){ isPermissionGranted ->
             if(!isPermissionGranted){
                 ActivityCompat.requestPermissions(appActivity, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), REQUEST_CODE)
@@ -81,15 +83,11 @@ class BusNearbyFragment : Fragment(), OnMapReadyCallback {
         }
 
         busArrivalVM.currentLocation.observe(viewLifecycleOwner) {
-            initMap()
+            userCurrentLocMarker(busArrivalVM.markerRadius())
         }
 
         // Map Start
         busArrivalVM.userCurrentLocation()
-
-        // Google Place SDK, Testing
-//        Places.initialize(appContext, getString(R.string.google_maps_key));
-//        placesClient = Places.createClient(appContext)
 
         // Map End
 
@@ -177,11 +175,32 @@ class BusNearbyFragment : Fragment(), OnMapReadyCallback {
         return super.onOptionsItemSelected(item)
     }
 
+    override fun onDestroyView() {
+        super.onDestroyView()
+        BusArrivalRepository().cancelJobs()
+    }
+
     /* Google Map Related Start */
 
     override fun onMapReady(googleMap: GoogleMap) {
         mMap = googleMap
         mapPreSetup()
+    }
+
+    // Map Pre-setup, lock to singapore bounds
+    private fun mapPreSetup(){
+        mMap.setLatLngBoundsForCameraTarget(Constant.MAP_BOUNDS)
+        mMap.setMinZoomPreference(11.0f)
+        mMap.setMaxZoomPreference(20.0f)
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(Constant.MAP_BOUNDS.center, 11f))
+    }
+
+    private fun initMap() {
+        val mapFragment = childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
+        mapFragment.getMapAsync(this)
+    }
+
+    private fun userCurrentLocMarker(bufferRadius: CircleOptions){
 
         // Use current location if location is turned on and permission valid
         if(busArrivalVM.currentLocation.value != null) {
@@ -190,26 +209,15 @@ class BusNearbyFragment : Fragment(), OnMapReadyCallback {
                 val userlatLng = LatLng(it.latitude, it.longitude)
                 val markerOptions = MarkerOptions().position(userlatLng).title("I Am Here!")
                 mMap.animateCamera(CameraUpdateFactory.newLatLng(userlatLng))
-                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(userlatLng, 18f))
+                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(userlatLng, 15f))
                 mMap.addMarker(markerOptions)
+                mMap.addCircle(bufferRadius)
             }
         }
         else {
             // else center to Singapore map
             mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(Constant.MAP_BOUNDS.center, 11f))
         }
-    }
-
-    // Map Pre-setup, lock to singapore bounds
-    private fun mapPreSetup(){
-        mMap.setLatLngBoundsForCameraTarget(Constant.MAP_BOUNDS)
-        mMap.setMinZoomPreference(11.0f)
-        mMap.setMaxZoomPreference(20.0f)
-    }
-
-    private fun initMap() {
-        val mapFragment = childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
-        mapFragment.getMapAsync(this)
     }
 
 
