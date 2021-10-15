@@ -11,6 +11,8 @@ import androidx.core.app.ActivityCompat
 import androidx.lifecycle.*
 import com.acn.sgbustimer.model.BusArrival
 import com.acn.sgbustimer.repository.BusArrivalRepository
+import com.acn.sgbustimer.repository.BusStopsRepository
+import com.acn.sgbustimer.util.Constant
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.model.CircleOptions
@@ -26,14 +28,16 @@ class BusNearbyViewModel(application: Application): AndroidViewModel(application
     val permissionGranted: LiveData<Boolean>
         get() = _permissionGranted
 
+    // Repository
+    private val busArrivalRepo =  BusArrivalRepository()
+    private val busStopsRepo = BusStopsRepository()
 
     // Data
-    private val repository =  BusArrivalRepository()
     private val _arrListOfNearbyBusStopCodes = MutableLiveData<ArrayList<String>>()
 
     private val _listOfBusArrivalLiveData = Transformations
         .switchMap(_arrListOfNearbyBusStopCodes) { listOfBSC ->
-            repository.getBusArrival(listOfBSC)
+            busArrivalRepo.getBusArrival(listOfBSC)
         }
     val listOfBusArrivalLiveData: LiveData<List<BusArrival>>
         get() = _listOfBusArrivalLiveData
@@ -78,6 +82,7 @@ class BusNearbyViewModel(application: Application): AndroidViewModel(application
             taskIT.addOnSuccessListener { location ->
                 if (location != null) {
                     _currentLocation.value = location
+                    updateNearbyBusStops()
                 }
             }
         }
@@ -94,7 +99,7 @@ class BusNearbyViewModel(application: Application): AndroidViewModel(application
                             it.longitude
                         )
                     )
-                    .radius(1000.0) // Meters
+                    .radius(Constant.USER_RADIUS) // Meters
                     .strokeWidth(10f)
                     .strokeColor(Color.GREEN)
                     .fillColor(Color.argb(128, 255, 0, 0))
@@ -106,4 +111,12 @@ class BusNearbyViewModel(application: Application): AndroidViewModel(application
 
         return CircleOptions()
     }
+
+    fun updateNearbyBusStops(){
+        _currentLocation.value?.let {
+            val tempV = busStopsRepo.getBusStopsValue(it)
+            Timber.i("Printing BusStopValue: $tempV")
+        }
+    }
+
 }

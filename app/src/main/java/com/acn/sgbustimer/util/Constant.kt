@@ -13,5 +13,7 @@ class Constant {
         const val DATAMALL_API_KEY = "r6LVWluBQXC0hv3Hjc3OOg=="
 
         const val DATAMALL_API = "http://datamall2.mytransport.sg/ltaodataservice/"
+
+        const val USER_RADIUS = 500.0 // 0.5KM
     }
 }

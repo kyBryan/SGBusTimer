@@ -37,9 +37,10 @@ object WebAccess {
 
 
     // API Services
-    val busArrivalService: BusArrivalService by lazy {
+    val dataMallService: DataMallService by lazy {
         rfDataMall.build()
-            .create(BusArrivalService::class.java)
+            .create(DataMallService::class.java)
     }
+
 
 }

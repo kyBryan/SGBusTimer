@@ -26,7 +26,7 @@ class BusArrivalRepository {
                         val listOfBA = ArrayList<BusArrival>()
 
                         for (busStopCode in listOfBusStopCodes) {
-                            val busArrival = WebAccess.busArrivalService.getBusArrivalApi(busStopCode)
+                            val busArrival = WebAccess.dataMallService.getBusArrivalApi(busStopCode)
 
                             busArrival.body()?.let {
                                 listOfBA.add(it)
