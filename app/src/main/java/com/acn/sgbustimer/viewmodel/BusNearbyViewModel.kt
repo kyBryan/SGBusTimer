@@ -10,6 +10,7 @@ import android.location.Location
 import androidx.core.app.ActivityCompat
 import androidx.lifecycle.*
 import com.acn.sgbustimer.model.BusArrival
+import com.acn.sgbustimer.model.BusStopsValue
 import com.acn.sgbustimer.repository.BusArrivalRepository
 import com.acn.sgbustimer.repository.BusStopsRepository
 import com.acn.sgbustimer.util.Constant
@@ -17,7 +18,8 @@ import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.model.CircleOptions
 import com.google.android.gms.maps.model.LatLng
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
+import kotlinx.coroutines.Dispatchers.Main
 import timber.log.Timber
 
 class BusNearbyViewModel(application: Application): AndroidViewModel(application) {
@@ -41,6 +43,12 @@ class BusNearbyViewModel(application: Application): AndroidViewModel(application
         }
     val listOfBusArrivalLiveData: LiveData<List<BusArrival>>
         get() = _listOfBusArrivalLiveData
+
+    //private val arrListOfAllSGBusStops = busStopsRepo.getBusStopsValue()
+    private val arrListOfAllSGBusStops by lazy { busStopsRepo.getBusStopsValue() }
+    private val arrListOfNBBusStops by lazy { ArrayList<BusStopsValue>() }
+    val listOfNBBusStops: List<BusStopsValue>
+        get() = arrListOfNBBusStops
 
     
     // Google Map Location Objects
@@ -82,7 +90,9 @@ class BusNearbyViewModel(application: Application): AndroidViewModel(application
             taskIT.addOnSuccessListener { location ->
                 if (location != null) {
                     _currentLocation.value = location
-                    updateNearbyBusStops()
+                    //runBlocking {
+                    //    busStopsRepo.cJob?.join()
+                    updateNearbyBusStops() //}
                 }
             }
         }
@@ -112,10 +122,42 @@ class BusNearbyViewModel(application: Application): AndroidViewModel(application
         return CircleOptions()
     }
 
-    fun updateNearbyBusStops(){
-        _currentLocation.value?.let {
-            val tempV = busStopsRepo.getBusStopsValue(it)
-            Timber.i("Printing BusStopValue: $tempV")
+
+
+    private fun updateNearbyBusStops(){
+        arrListOfAllSGBusStops ?: arrListOfAllSGBusStops
+
+        val unbsJob = Job()
+
+        unbsJob.let { unbsJob ->
+            CoroutineScope( Dispatchers.IO + unbsJob).launch {
+                busStopsRepo.cJob?.join()
+                _currentLocation.value?.let {
+                    Timber.i("Updating Nearby Bus Stops...")
+
+                    val tempArrListBusStopsCode = ArrayList<String>()
+                    val bsvLocation = Location("")
+                    if (arrListOfNBBusStops.count() != 0) arrListOfNBBusStops.clear()
+                    for (busStopsValue in arrListOfAllSGBusStops) {
+                        bsvLocation.latitude = busStopsValue.Latitude
+                        bsvLocation.longitude = busStopsValue.Longitude
+
+                        val distanceMeters = it.distanceTo(bsvLocation)
+
+                        if (distanceMeters <= Constant.USER_RADIUS) {
+                            Timber.i("Adding Bus Stop Code: ${busStopsValue.BusStopCode}")
+                            arrListOfNBBusStops.add(busStopsValue)
+                            tempArrListBusStopsCode.add(busStopsValue.BusStopCode)
+                        }
+                    }
+
+                    withContext(Main){
+                        _arrListOfNearbyBusStopCodes.value = tempArrListBusStopsCode
+                        Timber.i("Updated Nearby Bus Stops found: ${_arrListOfNearbyBusStopCodes.value?.count()}")
+                        unbsJob.complete()
+                    }
+                }
+            }
         }
     }
 

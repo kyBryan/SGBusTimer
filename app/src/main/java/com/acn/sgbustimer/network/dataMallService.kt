@@ -11,5 +11,5 @@ interface DataMallService {
     suspend fun getBusArrivalApi(@Query("BusStopCode") busStopCode: String): Response<BusArrival>
 
     @GET("BusStops")
-    suspend fun getBusStopsApi(@Query("skip") skip: String): Response<BusStops>
+    suspend fun getBusStopsApi(@Query("\$skip") skip: String): Response<BusStops>
 }

@@ -9,9 +9,10 @@ import androidx.recyclerview.widget.RecyclerView
 import com.acn.sgbustimer.R
 import com.acn.sgbustimer.databinding.BusNearbyBusStopListBinding
 import com.acn.sgbustimer.model.BusArrival
+import com.acn.sgbustimer.model.BusStopsValue
 import kotlinx.coroutines.currentCoroutineContext
 
-class BusNearbyBusStopAdapter(var busArrivalList: List<BusArrival>, val appContext: Context, private val clickListener: (BusArrival) -> Unit) :
+class BusNearbyBusStopAdapter(var busArrivalList: List<BusArrival>, var busStopsList: List<BusStopsValue>, val appContext: Context, private val clickListener: (BusArrival) -> Unit) :
     RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         val inflater = LayoutInflater.from(parent.context)
@@ -21,7 +22,7 @@ class BusNearbyBusStopAdapter(var busArrivalList: List<BusArrival>, val appConte
     }
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
-        (holder as BusStopViewHolder).bind(busArrivalList[position], clickListener)
+        (holder as BusStopViewHolder).bind(busArrivalList[position], busStopsList[position], clickListener)
     }
 
     override fun getItemCount(): Int {
@@ -29,7 +30,8 @@ class BusNearbyBusStopAdapter(var busArrivalList: List<BusArrival>, val appConte
     }
 
     inner class BusStopViewHolder(private val binding: BusNearbyBusStopListBinding) : RecyclerView.ViewHolder(binding.root) {
-        fun bind(busArrival: BusArrival, clickListener: (BusArrival) -> Unit) {
+        fun bind(busArrival: BusArrival, busStopsValue: BusStopsValue, clickListener: (BusArrival) -> Unit) {
+            binding.tvBusStopName.text = busStopsValue.Description
             binding.tvBusStopCode.text = busArrival.busStopCode
 
             val busServiceCount = busArrival.services.count()

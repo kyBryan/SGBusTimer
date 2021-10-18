@@ -20,6 +20,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.acn.sgbustimer.model.BusArrival
 import com.acn.sgbustimer.network.WebAccess
 import com.acn.sgbustimer.repository.BusArrivalRepository
+import com.acn.sgbustimer.repository.BusStopsRepository
 import com.acn.sgbustimer.util.Constant
 import com.acn.sgbustimer.viewmodel.BusNearbyViewModel
 import com.google.android.gms.location.FusedLocationProviderClient
@@ -113,8 +114,9 @@ class BusNearbyFragment : Fragment(), OnMapReadyCallback {
 //                }
             }
         })
-
-        bottomSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
+        bottomSheetBehavior.isFitToContents = false
+        bottomSheetBehavior.halfExpandedRatio = 0.5f
+        //bottomSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
 
         //Bottom Sheet Dialog Ends
 
@@ -123,26 +125,29 @@ class BusNearbyFragment : Fragment(), OnMapReadyCallback {
         binding.inclBusNearbyBottomSheetDialog.rvBusStops.layoutManager = LinearLayoutManager(appContext)
         binding.inclBusNearbyBottomSheetDialog.rvBusStops.setHasFixedSize(true)
 
-        busStopAdapter = BusNearbyBusStopAdapter(listOf(), appContext) { busStop: BusArrival -> busStopClicked(busStop)  }
+        busStopAdapter = BusNearbyBusStopAdapter(listOf(), listOf(), appContext) { busStop: BusArrival -> busStopClicked(busStop)  }
         binding.inclBusNearbyBottomSheetDialog.rvBusStops.adapter = busStopAdapter
 
         // Bus Arrival Api
-        arrListBusStopCodes.addAll(listOf("70211", "70309", "66369"))
+        //arrListBusStopCodes.addAll(listOf("70211", "70309", "66369"))
 
         busArrivalVM.listOfBusArrivalLiveData.observe(viewLifecycleOwner){ response ->
             if (response == null){
                 Timber.i("Response is Null listOfBusArrivalLiveData")
                 return@observe
             }
-            Timber.i("Print Response Service No: ${response[0].services[0].serviceNo}")
+            //Timber.i("Print Response Service No: ${response[0].services[0].serviceNo}")
 
-            busStopAdapter.busArrivalList = response as List<BusArrival>
+            busStopAdapter.busArrivalList = response
+            busStopAdapter.busStopsList = busArrivalVM.listOfNBBusStops
             // Inform recycler view that data has changed.
             // Makes sure the view re-renders itself
             busStopAdapter.notifyDataSetChanged()
+
+            bottomSheetBehavior.state = BottomSheetBehavior.STATE_HALF_EXPANDED
         }
 
-        busArrivalVM.setListOfNearbyBusStop(arrListBusStopCodes)
+        //busArrivalVM.setListOfNearbyBusStop(arrListBusStopCodes)
 
 
         // Inflate the layout for this fragment
@@ -178,6 +183,7 @@ class BusNearbyFragment : Fragment(), OnMapReadyCallback {
     override fun onDestroyView() {
         super.onDestroyView()
         BusArrivalRepository().cancelJobs()
+        BusStopsRepository().cancelJob()
     }
 
     /* Google Map Related Start */

@@ -18,7 +18,7 @@
         android:padding="16dp">
 
         <TextView
-            android:id="@+id/tvBusStopCode"
+            android:id="@+id/tvBusStopName"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:fontFamily="@font/roboto"
@@ -26,13 +26,26 @@
             android:textStyle="bold"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
+            tools:text="St Victoria Street" />
+
+        <TextView
+            android:id="@+id/tvBusStopCode"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:layout_marginTop="5dp"
+            android:fontFamily="@font/roboto"
+            android:textSize="12sp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/tvBusStopName"
             tools:text="12345" />
 
         <TextView
             android:id="@+id/tvBusNo1"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
+            android:layout_marginStart="10dp"
+            android:layout_marginTop="5dp"
             android:layout_marginEnd="10dp"
             android:background="@color/busNoPillColor"
             android:fontFamily="@font/roboto"
@@ -52,7 +65,7 @@
             android:id="@+id/tvBusNo2"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
+            android:layout_marginTop="5dp"
             android:layout_marginEnd="10dp"
             android:background="@color/busNoPillColor"
             android:fontFamily="@font/roboto"
@@ -72,7 +85,7 @@
             android:id="@+id/tvBusNo3"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
+            android:layout_marginTop="5dp"
             android:layout_marginEnd="10dp"
             android:background="@color/busNoPillColor"
             android:fontFamily="@font/roboto"
@@ -92,7 +105,7 @@
             android:id="@+id/tvBusNo4"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
+            android:layout_marginTop="5dp"
             android:layout_marginEnd="10dp"
             android:background="@color/busNoPillColor"
             android:fontFamily="@font/roboto"
@@ -112,7 +125,7 @@
             android:id="@+id/tvBusNo5"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
+            android:layout_marginTop="5dp"
             android:layout_marginEnd="10dp"
             android:background="@color/busNoPillColor"
             android:fontFamily="@font/roboto"
@@ -132,7 +145,7 @@
             android:id="@+id/tvMoreBus"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
+            android:layout_marginTop="5dp"
             android:fontFamily="@font/roboto"
             android:textSize="11sp"
             android:visibility="gone"
