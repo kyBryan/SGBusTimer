@@ -1,5 +1,6 @@
 package com.acn.sgbustimer.util
 
+import android.content.res.Resources
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
 
@@ -14,6 +15,12 @@ class Constant {
 
         const val DATAMALL_API = "http://datamall2.mytransport.sg/ltaodataservice/"
 
-        const val USER_RADIUS = 500.0 // 0.5KM
+        const val USER_RADIUS = 300.0 // 1KM is 1000.0
+
+        val Int.dp: Int
+            get() = (this * Resources.getSystem().displayMetrics.density + 0.5f).toInt()
+
+        val Float.dp: Int
+            get() = (this * Resources.getSystem().displayMetrics.density + 0.5f).toInt()
     }
 }

@@ -4,6 +4,7 @@ import android.Manifest
 import android.app.Activity
 import android.content.Context
 import android.content.pm.PackageManager
+import android.content.res.Resources
 import android.location.Location
 import android.os.Bundle
 import android.util.Log
@@ -22,6 +23,7 @@ import com.acn.sgbustimer.network.WebAccess
 import com.acn.sgbustimer.repository.BusArrivalRepository
 import com.acn.sgbustimer.repository.BusStopsRepository
 import com.acn.sgbustimer.util.Constant
+import com.acn.sgbustimer.util.Constant.Companion.dp
 import com.acn.sgbustimer.viewmodel.BusNearbyViewModel
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
@@ -104,14 +106,15 @@ class BusNearbyFragment : Fragment(), OnMapReadyCallback {
 
             override fun onStateChanged(bottomSheet: View, newState: Int) {
                 // handle state changes
-//                when (newState) {
+                when (newState) {
 //                    BottomSheetBehavior.STATE_COLLAPSED -> Toast.makeText(appContext, "STATE_COLLAPSED", Toast.LENGTH_SHORT).show()
-//                    BottomSheetBehavior.STATE_EXPANDED -> Toast.makeText(appContext, "STATE_EXPANDED", Toast.LENGTH_SHORT).show()
+                    BottomSheetBehavior.STATE_EXPANDED -> binding.inclBusNearbyBottomSheetDialog.busContentContainer.setPadding(0,0,0, 0.dp)
+                    BottomSheetBehavior.STATE_HALF_EXPANDED -> binding.inclBusNearbyBottomSheetDialog.busContentContainer.setPadding(0,0,0, 300.dp)
 //                    BottomSheetBehavior.STATE_DRAGGING -> Toast.makeText(appContext, "STATE_DRAGGING", Toast.LENGTH_SHORT).show()
 //                    BottomSheetBehavior.STATE_SETTLING -> Toast.makeText(appContext, "STATE_SETTLING", Toast.LENGTH_SHORT).show()
 //                    BottomSheetBehavior.STATE_HIDDEN -> Toast.makeText(appContext, "STATE_HIDDEN", Toast.LENGTH_SHORT).show()
 //                    else -> Toast.makeText(appContext, "OTHER_STATE", Toast.LENGTH_SHORT).show()
-//                }
+                }
             }
         })
         bottomSheetBehavior.isFitToContents = false

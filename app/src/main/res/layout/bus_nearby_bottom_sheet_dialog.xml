@@ -23,26 +23,30 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
-
         <ScrollView
-            android:id="@+id/busContentContainer"
             android:layout_width="match_parent"
-            android:layout_height="0dp"
+            android:layout_height="match_parent"
             android:layout_marginTop="40dp"
             android:orientation="vertical"
             android:paddingStart="5dp"
-            android:paddingEnd="5dp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="@id/view">
+            android:paddingEnd="5dp">
 
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/rvBusStops"
+            <androidx.core.widget.NestedScrollView
+                android:id="@+id/busContentContainer"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
-        </ScrollView>
+                android:layout_height="0dp"
+                android:paddingBottom="300dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="@id/view">
 
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rvBusStops"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
+            </androidx.core.widget.NestedScrollView>
+        </ScrollView>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>
