@@ -37,13 +37,16 @@ import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.libraries.places.api.Places;
 import com.google.android.libraries.places.api.net.PlacesClient
 import com.google.android.material.bottomsheet.BottomSheetBehavior
+import kotlinx.coroutines.*
+import kotlinx.coroutines.Dispatchers.Main
 import timber.log.Timber
 import java.util.*
 
 
-class BusNearbyFragment : Fragment(), OnMapReadyCallback {
+class BusNearbyFragment : Fragment() {
 
     // Google Map
+    private var mapJob: CompletableJob? = null
     private lateinit var mMap: GoogleMap
 
     // Current Location
@@ -185,16 +188,13 @@ class BusNearbyFragment : Fragment(), OnMapReadyCallback {
 
     override fun onDestroyView() {
         super.onDestroyView()
+        mMap.clear()
         BusArrivalRepository().cancelJobs()
         BusStopsRepository().cancelJob()
+        mapJob?.cancel()
     }
 
     /* Google Map Related Start */
-
-    override fun onMapReady(googleMap: GoogleMap) {
-        mMap = googleMap
-        mapPreSetup()
-    }
 
     // Map Pre-setup, lock to singapore bounds
     private fun mapPreSetup(){
@@ -205,27 +205,57 @@ class BusNearbyFragment : Fragment(), OnMapReadyCallback {
     }
 
     private fun initMap() {
-        val mapFragment = childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
-        mapFragment.getMapAsync(this)
+        mapJob = Job()
+
+        mapJob?.let { mapJob ->
+            CoroutineScope(Dispatchers.IO + mapJob).launch {
+                val mapFragment = childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
+
+                withContext(Main){
+                    mapFragment.getMapAsync {
+                        // *Overriding OnMapReady is here
+                        Timber.i("Initializing Map...")
+                        mMap = it
+                        mapPreSetup()
+                        Timber.i("Initialized Map completed.")
+                    }
+
+                    mapJob.complete()
+                }
+            }
+        }
     }
 
     private fun userCurrentLocMarker(bufferRadius: CircleOptions){
+        val uclJob = Job()
 
-        // Use current location if location is turned on and permission valid
-        if(busArrivalVM.currentLocation.value != null) {
-            Timber.i("user latlong is ${busArrivalVM.currentLocation.value}")
-            busArrivalVM.currentLocation.value?.let {
-                val userlatLng = LatLng(it.latitude, it.longitude)
-                val markerOptions = MarkerOptions().position(userlatLng).title("I Am Here!")
-                mMap.animateCamera(CameraUpdateFactory.newLatLng(userlatLng))
-                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(userlatLng, 15f))
-                mMap.addMarker(markerOptions)
-                mMap.addCircle(bufferRadius)
+        uclJob.let { uJob ->
+            CoroutineScope(Dispatchers.IO + uJob).launch {
+                mapJob?.join()
+                // Use current location if location is turned on and permission valid
+                if (busArrivalVM.currentLocation.value != null) {
+                    Timber.i("user latlong is ${busArrivalVM.currentLocation.value}")
+                    busArrivalVM.currentLocation.value?.let {
+                        val userlatLng = LatLng(it.latitude, it.longitude)
+                        val markerOptions = MarkerOptions().position(userlatLng).title("I Am Here!")
+                        withContext(Main){
+                            //mMap.animateCamera(CameraUpdateFactory.newLatLng(userlatLng))
+                            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(userlatLng, 15f))
+                            mMap.addMarker(markerOptions)
+                            mMap.addCircle(bufferRadius)
+
+                            uJob.complete()
+                        }
+                    }
+                } else {
+                    withContext(Main){
+                        // else center to Singapore map
+                        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(Constant.MAP_BOUNDS.center, 11f))
+
+                        uJob.complete()
+                    }
+                }
             }
-        }
-        else {
-            // else center to Singapore map
-            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(Constant.MAP_BOUNDS.center, 11f))
         }
     }
 

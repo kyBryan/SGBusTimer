@@ -15,7 +15,7 @@ class Constant {
 
         const val DATAMALL_API = "http://datamall2.mytransport.sg/ltaodataservice/"
 
-        const val USER_RADIUS = 300.0 // 1KM is 1000.0
+        const val USER_RADIUS = 500.0 // 1KM is 1000.0
 
         val Int.dp: Int
             get() = (this * Resources.getSystem().displayMetrics.density + 0.5f).toInt()
