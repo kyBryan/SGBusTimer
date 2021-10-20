@@ -8,6 +8,7 @@ import android.content.pm.PackageManager
 import android.graphics.Color
 import android.location.Location
 import androidx.core.app.ActivityCompat
+import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.*
 import com.acn.sgbustimer.model.BusArrival
 import com.acn.sgbustimer.model.BusStopsValue
@@ -18,11 +19,19 @@ import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.model.CircleOptions
 import com.google.android.gms.maps.model.LatLng
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.*
 import kotlinx.coroutines.Dispatchers.Main
 import timber.log.Timber
+import javax.inject.Inject
+import javax.inject.Named
 
-class BusNearbyViewModel(application: Application): AndroidViewModel(application) {
+@HiltViewModel
+class BusNearbyViewModel @Inject constructor(
+    application: Application,
+    @Named("BusStopsRepo") injStopsRepo: BusStopsRepository,
+    @Named("AllBusStopsValue") injAllSGBusStops: ArrayList<BusStopsValue>
+): AndroidViewModel(application) {
 
     // Application
     private val vmAppContext by lazy { getApplication<Application>().applicationContext }
@@ -32,7 +41,7 @@ class BusNearbyViewModel(application: Application): AndroidViewModel(application
 
     // Repository
     private val busArrivalRepo =  BusArrivalRepository()
-    private val busStopsRepo = BusStopsRepository()
+    private val busStopsRepo = injStopsRepo
 
     // Data
     private val _arrListOfNearbyBusStopCodes = MutableLiveData<ArrayList<String>>()
@@ -45,7 +54,7 @@ class BusNearbyViewModel(application: Application): AndroidViewModel(application
         get() = _listOfBusArrivalLiveData
 
     //private val arrListOfAllSGBusStops = busStopsRepo.getBusStopsValue()
-    private val arrListOfAllSGBusStops by lazy { busStopsRepo.getBusStopsValue() }
+    private var arrListOfAllSGBusStops: ArrayList<BusStopsValue> = injAllSGBusStops
     private val arrListOfNBBusStops by lazy { ArrayList<BusStopsValue>() }
     val listOfNBBusStops: List<BusStopsValue>
         get() = arrListOfNBBusStops
@@ -125,12 +134,12 @@ class BusNearbyViewModel(application: Application): AndroidViewModel(application
 
 
     private fun updateNearbyBusStops(){
-        arrListOfAllSGBusStops ?: arrListOfAllSGBusStops
 
         val unbsJob = Job()
 
         unbsJob.let { unbsJob ->
             CoroutineScope( Dispatchers.IO + unbsJob).launch {
+                Timber.i("is cJob Active?: ${busStopsRepo.cJob?.isActive}")
                 busStopsRepo.cJob?.join()
                 _currentLocation.value?.let {
                     Timber.i("Updating Nearby Bus Stops...")
