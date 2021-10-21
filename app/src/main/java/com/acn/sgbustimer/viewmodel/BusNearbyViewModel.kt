@@ -1,15 +1,15 @@
 package com.acn.sgbustimer.viewmodel
 
 import android.Manifest
-import android.app.Activity
 import android.app.Application
-import android.content.Context
 import android.content.pm.PackageManager
 import android.graphics.Color
 import android.location.Location
 import androidx.core.app.ActivityCompat
-import androidx.hilt.lifecycle.ViewModelInject
-import androidx.lifecycle.*
+import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.Transformations
 import com.acn.sgbustimer.model.BusArrival
 import com.acn.sgbustimer.model.BusStopsValue
 import com.acn.sgbustimer.repository.BusArrivalRepository
@@ -20,7 +20,7 @@ import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.model.CircleOptions
 import com.google.android.gms.maps.model.LatLng
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.*
+import kotlinx.coroutines.* // ktlint-disable no-wildcard-imports
 import kotlinx.coroutines.Dispatchers.Main
 import timber.log.Timber
 import javax.inject.Inject
@@ -31,7 +31,7 @@ class BusNearbyViewModel @Inject constructor(
     application: Application,
     @Named("BusStopsRepo") injStopsRepo: BusStopsRepository,
     @Named("AllBusStopsValue") injAllSGBusStops: ArrayList<BusStopsValue>
-): AndroidViewModel(application) {
+) : AndroidViewModel(application) {
 
     // Application
     private val vmAppContext by lazy { getApplication<Application>().applicationContext }
@@ -40,7 +40,7 @@ class BusNearbyViewModel @Inject constructor(
         get() = _permissionGranted
 
     // Repository
-    private val busArrivalRepo =  BusArrivalRepository()
+    private val busArrivalRepo = BusArrivalRepository()
     private val busStopsRepo = injStopsRepo
 
     // Data
@@ -53,13 +53,12 @@ class BusNearbyViewModel @Inject constructor(
     val listOfBusArrivalLiveData: LiveData<List<BusArrival>>
         get() = _listOfBusArrivalLiveData
 
-    //private val arrListOfAllSGBusStops = busStopsRepo.getBusStopsValue()
+    // private val arrListOfAllSGBusStops = busStopsRepo.getBusStopsValue()
     private var arrListOfAllSGBusStops: ArrayList<BusStopsValue> = injAllSGBusStops
     private val arrListOfNBBusStops by lazy { ArrayList<BusStopsValue>() }
     val listOfNBBusStops: List<BusStopsValue>
         get() = arrListOfNBBusStops
 
-    
     // Google Map Location Objects
     private val _fusedLocationProviderClient = MutableLiveData<FusedLocationProviderClient>()
     val fusedLocationProviderClient: LiveData<FusedLocationProviderClient>
@@ -69,12 +68,10 @@ class BusNearbyViewModel @Inject constructor(
     val currentLocation: LiveData<Location>
         get() = _currentLocation
 
-
-
     init {
         _permissionGranted.value = true
         _fusedLocationProviderClient.value =
-                LocationServices.getFusedLocationProviderClient(vmAppContext)
+            LocationServices.getFusedLocationProviderClient(vmAppContext)
     }
 
     fun setListOfNearbyBusStop(arrListBusStopCodes: ArrayList<String>) {
@@ -83,25 +80,25 @@ class BusNearbyViewModel @Inject constructor(
 
     /* Google Map Related */
     // Get User Current location
-    fun userCurrentLocation(){
+    fun userCurrentLocation() {
 
-        if (ActivityCompat.checkSelfPermission(vmAppContext, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
-             && ActivityCompat.checkSelfPermission(vmAppContext, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED
+        if (ActivityCompat.checkSelfPermission(vmAppContext, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+            ActivityCompat.checkSelfPermission(vmAppContext, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED
         ) {
             // Permission not granted
             _permissionGranted.value = false
             return
         }
 
-        val task =  _fusedLocationProviderClient.value?.lastLocation
+        val task = _fusedLocationProviderClient.value?.lastLocation
         task?.let { taskIT ->
             Timber.i("TaskIT Check")
             taskIT.addOnSuccessListener { location ->
                 if (location != null) {
                     _currentLocation.value = location
-                    //runBlocking {
+                    // runBlocking {
                     //    busStopsRepo.cJob?.join()
-                    updateNearbyBusStops() //}
+                    updateNearbyBusStops() // }
                 }
             }
         }
@@ -131,14 +128,12 @@ class BusNearbyViewModel @Inject constructor(
         return CircleOptions()
     }
 
-
-
-    private fun updateNearbyBusStops(){
+    private fun updateNearbyBusStops() {
 
         val unbsJob = Job()
 
         unbsJob.let { unbsJob ->
-            CoroutineScope( Dispatchers.IO + unbsJob).launch {
+            CoroutineScope(Dispatchers.IO + unbsJob).launch {
                 Timber.i("is cJob Active?: ${busStopsRepo.cJob?.isActive}")
                 busStopsRepo.cJob?.join()
                 _currentLocation.value?.let {
@@ -160,7 +155,7 @@ class BusNearbyViewModel @Inject constructor(
                         }
                     }
 
-                    withContext(Main){
+                    withContext(Main) {
                         _arrListOfNearbyBusStopCodes.value = tempArrListBusStopsCode
                         Timber.i("Updated Nearby Bus Stops found: ${_arrListOfNearbyBusStopCodes.value?.count()}")
                         unbsJob.complete()
@@ -169,5 +164,4 @@ class BusNearbyViewModel @Inject constructor(
             }
         }
     }
-
 }

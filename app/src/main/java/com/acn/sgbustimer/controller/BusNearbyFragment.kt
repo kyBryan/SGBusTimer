@@ -270,9 +270,9 @@ class BusNearbyFragment : Fragment() {
 
         Timber.i("Clicked on BusStop: ${busStop.busStopCode}")
         val busStopCode = busStop.busStopCode
-        var busServiceNoList: MutableList<String> = mutableListOf()
-        var busServiceNextTime: MutableList<String> = mutableListOf()
-        var busServiceNextTimeTwo: MutableList<String> = mutableListOf()
+        val busServiceNoList: MutableList<String> = mutableListOf()
+        val busServiceNextTime: MutableList<String> = mutableListOf()
+        val busServiceNextTimeTwo: MutableList<String> = mutableListOf()
 
         for(i in 0 until busStop.services.count()){
             busServiceNoList.add(busStop.services[i].serviceNo)
@@ -281,7 +281,8 @@ class BusNearbyFragment : Fragment() {
         }
 
         view?.let{
-            it.findNavController().navigate(BusNearbyFragmentDirections.actionBusNearbyFragmentToBusTimeFragment(busStopCode, busServiceNoList.toTypedArray(), busServiceNextTime.toTypedArray(), busServiceNextTimeTwo.toTypedArray()))
+            it.findNavController().navigate(
+                BusNearbyFragmentDirections.actionBusNearbyFragmentToBusTimeFragment(busStopCode, busServiceNoList.toTypedArray(), busServiceNextTime.toTypedArray(), busServiceNextTimeTwo.toTypedArray()))
         }
     }
 

@@ -4,9 +4,13 @@ import android.util.Log
 import androidx.lifecycle.LiveData
 import com.acn.sgbustimer.model.BusArrival
 import com.acn.sgbustimer.network.WebAccess
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CompletableJob
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.Dispatchers.Main
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class BusArrivalRepository {
 
@@ -15,11 +19,11 @@ class BusArrivalRepository {
     fun getBusArrival(listOfBusStopCodes: List<String>): LiveData<List<BusArrival>> {
         Log.i("BusArrivalRepository", "Entered getBusArrival() 1")
         cJob = Job()
-        return object: LiveData<List<BusArrival>>(){
+        return object : LiveData<List<BusArrival>>() {
             override fun onActive() {
                 super.onActive()
                 Log.i("BusArrivalRepository", "Entered getBusArrival() 2")
-                cJob?.let{ job ->
+                cJob?.let { job ->
                     Log.i("BusArrivalRepository", "Entered getBusArrival() 3")
                     CoroutineScope(IO + job).launch {
                         Log.i("BusArrivalRepository", "Entered getBusArrival() 4")
@@ -31,23 +35,19 @@ class BusArrivalRepository {
                             busArrival.body()?.let {
                                 listOfBA.add(it)
                             }
-
                         }
-                        withContext(Main){
+                        withContext(Main) {
                             Log.i("BusArrivalRepository", "Entered getBusArrival() 5")
                             value = listOfBA.toList()
                             job.complete()
                         }
                     }
                 }
-
             }
         }
     }
 
-
     fun cancelJobs() {
         cJob?.cancel()
     }
-
 }

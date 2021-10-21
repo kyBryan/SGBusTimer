@@ -1,11 +1,8 @@
 package com.acn.sgbustimer.repository
 
-import android.location.Location
-import android.util.Log
 import com.acn.sgbustimer.model.BusStopsValue
 import com.acn.sgbustimer.network.WebAccess
-import com.acn.sgbustimer.util.Constant
-import kotlinx.coroutines.*
+import kotlinx.coroutines.* // ktlint-disable no-wildcard-imports
 import kotlinx.coroutines.Dispatchers.Main
 import timber.log.Timber
 
@@ -17,7 +14,7 @@ class BusStopsRepository {
 
         cJob = Job()
 
-        cJob?.let{ job ->
+        cJob?.let { job ->
             CoroutineScope(Dispatchers.IO + job).launch {
                 Timber.i("BusStopsRepository is being called.")
 
@@ -26,24 +23,22 @@ class BusStopsRepository {
                 for (skipStr in skipStringList) {
                     val busStops = WebAccess.dataMallService.getBusStopsApi(skipStr)
 
-                    busStops.body()?.let{
+                    busStops.body()?.let {
                         arrListOfNBBusStops.addAll(it.value)
                     }
                 }
 
-                withContext(Main){
+                withContext(Main) {
                     Timber.i("BusStopsRepository is completed, fetch count: ${arrListOfNBBusStops.count()}.")
                     cJob?.complete()
                 }
             }
         }
 
-
         return arrListOfNBBusStops
     }
 
-    fun cancelJob(){
+    fun cancelJob() {
         cJob?.cancel()
     }
-
 }
