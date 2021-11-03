@@ -5,11 +5,11 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
-import androidx.fragment.app.Fragment
 import com.acn.sgbustimer.R
-import com.acn.sgbustimer.databinding.BusViewFragmentBinding
+import com.acn.sgbustimer.databinding.BusNearbyBottomSheetDialogBinding
+import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 
-class BusViewFragment : Fragment() {
+class BusNearbyBottomSheetDialog : BottomSheetDialogFragment() {
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -17,9 +17,8 @@ class BusViewFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
 
-        val binding = DataBindingUtil.inflate<BusViewFragmentBinding>(inflater, R.layout.bus_view_fragment, container, false)
+        val binding = DataBindingUtil.inflate<BusNearbyBottomSheetDialogBinding>(inflater, R.layout.bus_nearby_bottom_sheet_dialog, container, false)
 
-        // Inflate the layout for this fragment
         return binding.root
     }
 }

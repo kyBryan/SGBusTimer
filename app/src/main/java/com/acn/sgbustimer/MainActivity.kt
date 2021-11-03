@@ -19,8 +19,10 @@ import androidx.navigation.ui.NavigationUI.setupActionBarWithNavController
 import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupActionBarWithNavController
 import com.acn.sgbustimer.databinding.ActivityMainBinding
+import dagger.hilt.android.AndroidEntryPoint
 import timber.log.Timber
 
+@AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
     private lateinit var drawerLayout: DrawerLayout
     private lateinit var appBarConfiguration : AppBarConfiguration
@@ -45,8 +47,12 @@ class MainActivity : AppCompatActivity() {
         navController.addOnDestinationChangedListener { nc: NavController, nd: NavDestination, bundle: Bundle? ->
             if (nd.id == nc.graph.startDestination) {
                 drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED)
+                toolbar.setBackgroundColor(getResources().getColor(R.color.colorPrimary, null))
+
             } else {
                 drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED)
+                supportActionBar?.setHomeAsUpIndicator(R.drawable.closeicon)
+                toolbar.setBackgroundColor(getResources().getColor(R.color.toolBarColorYellow, null))
             }
         }
         NavigationUI.setupWithNavController(binding.navView, navController)
@@ -65,6 +71,5 @@ class MainActivity : AppCompatActivity() {
         Timber.i("Enter Support Navigation Up")
         val navController = this.findNavController(R.id.navHostFragment)
         return NavigationUI.navigateUp(navController, appBarConfiguration)
-//        return navController.navigateUp(appBarConfiguration) || super.onSupportNavigateUp()
     }
 }

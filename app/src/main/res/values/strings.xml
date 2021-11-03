@@ -8,4 +8,7 @@
     <string name="menu_bus">Bus Menu</string>
     <string name="menu_bus_nearby">Bus Nearby</string>
     <string name="sgbuslogo">SG Bus Logo</string>
+
+    <string name="x_more_bus">more bus</string>
+    <string name="no_available_bus">No available buses</string>
 </resources>

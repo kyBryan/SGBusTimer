@@ -14,5 +14,31 @@
         android:id="@+id/busNearbyFragment"
         android:name="com.acn.sgbustimer.controller.BusNearbyFragment"
         android:label="Bus Arrival Timing"
-        tools:layout="@layout/bus_nearby_view_fragment" />
+        tools:layout="@layout/bus_nearby_view_fragment" >
+        <action
+            android:id="@+id/action_busNearbyFragment_to_busTimeFragment"
+            app:destination="@id/busTimeFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/busTimeFragment"
+        android:name="com.acn.sgbustimer.controller.BusTimeFragment"
+        android:label="BusTimeFragment"
+        tools:layout="@layout/bus_time_fragment">
+
+        <argument
+            android:name="argsBusStopCode"
+            app:argType="string" />
+        <argument
+            android:name="argsBusStopServiceNo"
+            app:argType="string[]"
+            app:nullable="true" />
+        <argument
+            android:name="argsBusStopServiceNextTiming"
+            app:argType="string[]"
+            app:nullable="true" />
+        <argument
+            android:name="argsBusStopServiceNextTimingTwo"
+            app:argType="string[]"
+            app:nullable="true" />
+    </fragment>
 </navigation>
