@@ -20,10 +20,11 @@ import javax.inject.Singleton
 object BusStopsModule {
 
     lateinit var job: Job
+    lateinit var arrListOfNBBusStops: ArrayList<BusStopsValue>
 
     @Singleton
     @Provides
-    @Named("AllBusStopsValue")
+    @Named(ALL_BUS_STOPS_VALUE)
     fun provideAllBusStopsValue(@Named(CommonObjectModule.COMMON_REST_ADAPTER) retrofit: Retrofit): ArrayList<BusStopsValue> {
 
         Timber.i("fetching all BusStopsValue...")
@@ -44,4 +45,18 @@ object BusStopsModule {
 
         return arrListOfAllBusStopsValue
     }
+
+    @Provides
+    @Singleton
+    @Named(NEARBY_BUS_STOPS_LIST)
+    fun provideNearbyBusStopsList(): ArrayList<BusStopsValue> {
+        if (!this::arrListOfNBBusStops.isInitialized) {
+            arrListOfNBBusStops = ArrayList()
+        }
+
+        return arrListOfNBBusStops
+    }
+
+    const val ALL_BUS_STOPS_VALUE = "ALL_BUS_STOPS_VALUE"
+    const val NEARBY_BUS_STOPS_LIST = "NEARBY_BUS_STOPS_LIST"
 }
