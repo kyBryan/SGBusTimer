@@ -6,14 +6,12 @@ import android.content.pm.PackageManager
 import android.graphics.Color
 import android.location.Location
 import androidx.core.app.ActivityCompat
-import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.Transformations
+import androidx.lifecycle.*
+import com.acn.sgbustimer.di.module.AppModule
+import com.acn.sgbustimer.di.module.BusStopsModule
 import com.acn.sgbustimer.model.BusArrival
 import com.acn.sgbustimer.model.BusStopsValue
 import com.acn.sgbustimer.repository.BusArrivalRepository
-import com.acn.sgbustimer.repository.BusStopsRepository
 import com.acn.sgbustimer.util.Constant
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
@@ -29,7 +27,6 @@ import javax.inject.Named
 @HiltViewModel
 class BusNearbyViewModel @Inject constructor(
     application: Application,
-    @Named("BusStopsRepo") injStopsRepo: BusStopsRepository,
     @Named("AllBusStopsValue") injAllSGBusStops: ArrayList<BusStopsValue>
 ) : AndroidViewModel(application) {
 
@@ -41,7 +38,6 @@ class BusNearbyViewModel @Inject constructor(
 
     // Repository
     private val busArrivalRepo = BusArrivalRepository()
-    private val busStopsRepo = injStopsRepo
 
     // Data
     private val _arrListOfNearbyBusStopCodes = MutableLiveData<ArrayList<String>>()
@@ -53,7 +49,7 @@ class BusNearbyViewModel @Inject constructor(
     val listOfBusArrivalLiveData: LiveData<List<BusArrival>>
         get() = _listOfBusArrivalLiveData
 
-    // private val arrListOfAllSGBusStops = busStopsRepo.getBusStopsValue()
+
     private var arrListOfAllSGBusStops: ArrayList<BusStopsValue> = injAllSGBusStops
     private val arrListOfNBBusStops by lazy { ArrayList<BusStopsValue>() }
     val listOfNBBusStops: List<BusStopsValue>
@@ -130,36 +126,30 @@ class BusNearbyViewModel @Inject constructor(
 
     private fun updateNearbyBusStops() {
 
-        val unbsJob = Job()
+       viewModelScope.launch {
+            _currentLocation.value?.let {
+                Timber.i("Updating Nearby Bus Stops...")
+                BusStopsModule.job.join()
+                val tempArrListBusStopsCode = ArrayList<String>()
+                val bsvLocation = Location("")
+                if (arrListOfNBBusStops.count() != 0) arrListOfNBBusStops.clear()
 
-        unbsJob.let { unbsJob ->
-            CoroutineScope(Dispatchers.IO + unbsJob).launch {
-                Timber.i("is cJob Active?: ${busStopsRepo.cJob?.isActive}")
-                busStopsRepo.cJob?.join()
-                _currentLocation.value?.let {
-                    Timber.i("Updating Nearby Bus Stops...")
+                for (busStopsValue in arrListOfAllSGBusStops) {
+                    bsvLocation.latitude = busStopsValue.Latitude
+                    bsvLocation.longitude = busStopsValue.Longitude
 
-                    val tempArrListBusStopsCode = ArrayList<String>()
-                    val bsvLocation = Location("")
-                    if (arrListOfNBBusStops.count() != 0) arrListOfNBBusStops.clear()
-                    for (busStopsValue in arrListOfAllSGBusStops) {
-                        bsvLocation.latitude = busStopsValue.Latitude
-                        bsvLocation.longitude = busStopsValue.Longitude
+                    val distanceMeters = it.distanceTo(bsvLocation)
 
-                        val distanceMeters = it.distanceTo(bsvLocation)
-
-                        if (distanceMeters <= Constant.USER_RADIUS) {
-                            Timber.i("Adding Bus Stop Code: ${busStopsValue.BusStopCode}")
-                            arrListOfNBBusStops.add(busStopsValue)
-                            tempArrListBusStopsCode.add(busStopsValue.BusStopCode)
-                        }
+                    if (distanceMeters <= Constant.USER_RADIUS) {
+                        Timber.i("Adding Bus Stop Code: ${busStopsValue.BusStopCode}")
+                        arrListOfNBBusStops.add(busStopsValue)
+                        tempArrListBusStopsCode.add(busStopsValue.BusStopCode)
                     }
+                }
 
-                    withContext(Main) {
-                        _arrListOfNearbyBusStopCodes.value = tempArrListBusStopsCode
-                        Timber.i("Updated Nearby Bus Stops found: ${_arrListOfNearbyBusStopCodes.value?.count()}")
-                        unbsJob.complete()
-                    }
+                withContext(Main) {
+                    _arrListOfNearbyBusStopCodes.value = tempArrListBusStopsCode
+                    Timber.i("Updated Nearby Bus Stops found: ${_arrListOfNearbyBusStopCodes.value?.count()}")
                 }
             }
         }

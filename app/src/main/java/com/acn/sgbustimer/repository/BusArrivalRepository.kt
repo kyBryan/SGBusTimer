@@ -3,7 +3,7 @@ package com.acn.sgbustimer.repository
 import android.util.Log
 import androidx.lifecycle.LiveData
 import com.acn.sgbustimer.model.BusArrival
-import com.acn.sgbustimer.network.WebAccess
+import com.acn.sgbustimer.service.WebAccess
 import kotlinx.coroutines.CompletableJob
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers.IO

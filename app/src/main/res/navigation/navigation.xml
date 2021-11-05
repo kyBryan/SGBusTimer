@@ -7,12 +7,12 @@
 
     <fragment
         android:id="@+id/busViewFragment"
-        android:name="com.acn.sgbustimer.controller.BusViewFragment"
+        android:name="com.acn.sgbustimer.fragment.BusViewFragment"
         android:label="SG Bus Timer"
         tools:layout="@layout/bus_view_fragment" />
     <fragment
         android:id="@+id/busNearbyFragment"
-        android:name="com.acn.sgbustimer.controller.BusNearbyFragment"
+        android:name="com.acn.sgbustimer.fragment.BusNearbyFragment"
         android:label="Bus Arrival Timing"
         tools:layout="@layout/bus_nearby_view_fragment" >
         <action
@@ -21,7 +21,7 @@
     </fragment>
     <fragment
         android:id="@+id/busTimeFragment"
-        android:name="com.acn.sgbustimer.controller.BusTimeFragment"
+        android:name="com.acn.sgbustimer.fragment.BusTimeFragment"
         android:label="BusTimeFragment"
         tools:layout="@layout/bus_time_fragment">
 
