@@ -1,13 +1,10 @@
-package com.acn.sgbustimer.controller
+package com.acn.sgbustimer.fragment
 
 import android.Manifest
 import android.app.Activity
 import android.content.Context
 import android.content.pm.PackageManager
-import android.content.res.Resources
-import android.location.Location
 import android.os.Bundle
-import android.util.Log
 import android.view.*
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.fragment.app.Fragment
@@ -18,26 +15,21 @@ import androidx.core.app.ActivityCompat
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.acn.sgbustimer.adapter.BusNearbyBusStopAdapter
+import com.acn.sgbustimer.di.module.AppModule
+import com.acn.sgbustimer.di.module.BusStopsModule
 import com.acn.sgbustimer.model.BusArrival
-import com.acn.sgbustimer.network.WebAccess
 import com.acn.sgbustimer.repository.BusArrivalRepository
-import com.acn.sgbustimer.repository.BusStopsRepository
 import com.acn.sgbustimer.util.Constant
 import com.acn.sgbustimer.util.Constant.Companion.dp
 import com.acn.sgbustimer.viewmodel.BusNearbyViewModel
-import com.google.android.gms.location.FusedLocationProviderClient
-import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
-import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.CircleOptions
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
-import com.google.android.libraries.places.api.Places;
-import com.google.android.libraries.places.api.net.PlacesClient
 import com.google.android.material.bottomsheet.BottomSheetBehavior
-import dagger.hilt.EntryPoint
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.*
 import kotlinx.coroutines.Dispatchers.Main
@@ -192,8 +184,8 @@ class BusNearbyFragment : Fragment() {
         super.onDestroyView()
         mMap.clear()
         BusArrivalRepository().cancelJobs()
-        BusStopsRepository().cancelJob()
         mapJob?.cancel()
+        BusStopsModule.job.cancel()
     }
 
     /* Google Map Related Start */
@@ -282,7 +274,13 @@ class BusNearbyFragment : Fragment() {
 
         view?.let{
             it.findNavController().navigate(
-                BusNearbyFragmentDirections.actionBusNearbyFragmentToBusTimeFragment(busStopCode, busServiceNoList.toTypedArray(), busServiceNextTime.toTypedArray(), busServiceNextTimeTwo.toTypedArray()))
+                BusNearbyFragmentDirections.actionBusNearbyFragmentToBusTimeFragment(
+                    busStopCode,
+                    busServiceNoList.toTypedArray(),
+                    busServiceNextTime.toTypedArray(),
+                    busServiceNextTimeTwo.toTypedArray()
+                )
+            )
         }
     }
 

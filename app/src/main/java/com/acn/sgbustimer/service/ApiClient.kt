@@ -1,4 +1,4 @@
-package com.acn.sgbustimer.network
+package com.acn.sgbustimer.service
 
 // class ApiClient(
 //    private val busArrivalService: BusArrivalService

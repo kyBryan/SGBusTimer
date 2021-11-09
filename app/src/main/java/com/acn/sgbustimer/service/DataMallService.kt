@@ -1,4 +1,4 @@
-package com.acn.sgbustimer.network
+package com.acn.sgbustimer.service
 
 import com.acn.sgbustimer.model.BusArrival
 import com.acn.sgbustimer.model.BusStops

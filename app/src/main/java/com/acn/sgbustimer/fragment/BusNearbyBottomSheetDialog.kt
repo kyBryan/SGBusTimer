@@ -1,4 +1,4 @@
-package com.acn.sgbustimer.controller
+package com.acn.sgbustimer.fragment
 
 import android.os.Bundle
 import android.view.LayoutInflater
