@@ -53,8 +53,8 @@ class BusNearbyFragment : Fragment() {
     // Bottom Sheet
     private lateinit var bottomSheetBehavior: BottomSheetBehavior<ConstraintLayout>
 
-    // Recycle View
-    private lateinit var busStopAdapter: BusNearbyBusStopAdapter
+    // List Adapter
+    private val busStopAdapter by lazy { BusNearbyBusStopAdapter() }
 
     // View Model
     private val busArrivalVM: BusNearbyViewModel by lazy {
@@ -123,32 +123,21 @@ class BusNearbyFragment : Fragment() {
 
         // Recycler View for listing bus stops
         binding.inclBusNearbyBottomSheetDialog.rvBusStops.layoutManager = LinearLayoutManager(appContext)
-        binding.inclBusNearbyBottomSheetDialog.rvBusStops.setHasFixedSize(true)
+        //binding.inclBusNearbyBottomSheetDialog.rvBusStops.setHasFixedSize(true)
 
-        busStopAdapter = BusNearbyBusStopAdapter(listOf(), listOf(), appContext) { busStop: BusArrival -> busStopClicked(busStop)  }
         binding.inclBusNearbyBottomSheetDialog.rvBusStops.adapter = busStopAdapter
-
-        // Bus Arrival Api
-        //arrListBusStopCodes.addAll(listOf("70211", "70309", "66369"))
 
         busArrivalVM.listOfBusArrivalLiveData.observe(viewLifecycleOwner){ response ->
             if (response == null){
                 Timber.i("Response is Null listOfBusArrivalLiveData")
                 return@observe
             }
-            //Timber.i("Print Response Service No: ${response[0].services[0].serviceNo}")
+            busArrivalVM.combineListForAdapter()
 
-            busStopAdapter.busArrivalList = response
-            busStopAdapter.busStopsList = busArrivalVM.listOfNBBusStops
-            // Inform recycler view that data has changed.
-            // Makes sure the view re-renders itself
-            busStopAdapter.notifyDataSetChanged()
+            busStopAdapter.submitList(busArrivalVM.arrListOfBusStopsSection.toMutableList())
 
             bottomSheetBehavior.state = BottomSheetBehavior.STATE_HALF_EXPANDED
         }
-
-        //busArrivalVM.setListOfNearbyBusStop(arrListBusStopCodes)
-
 
         // Inflate the layout for this fragment
         return binding.root

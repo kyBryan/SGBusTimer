@@ -5,58 +5,81 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.databinding.DataBindingUtil
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.acn.sgbustimer.R
 import com.acn.sgbustimer.databinding.BusNearbyBusStopListBinding
 import com.acn.sgbustimer.model.BusArrival
+import com.acn.sgbustimer.model.BusStopsSection
 import com.acn.sgbustimer.model.BusStopsValue
+import timber.log.Timber
 
-class BusNearbyBusStopAdapter(var busArrivalList: List<BusArrival>, var busStopsList: List<BusStopsValue>, val appContext: Context, private val clickListener: (BusArrival) -> Unit) :
-    RecyclerView.Adapter<RecyclerView.ViewHolder>() {
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
+class BusNearbyBusStopAdapter(
+    //private val onHomeItemClickListener: OnHomeItemClickListener
+): ListAdapter<BusStopsSection, BusNearbyBusStopAdapter.BaseViewHolder>(
+    BusNearbyBusStopDiffUtil()
+) {
+    init {
+        setHasStableIds(true)
+    }
+
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): BaseViewHolder {
+        Timber.i("Create view holder for $viewType")
+
         val inflater = LayoutInflater.from(parent.context)
-        val binding = BusNearbyBusStopListBinding.inflate(inflater, parent, false)
-
-        return BusStopViewHolder(binding)
+        return BusNearbyBusStopViewHolder(DataBindingUtil.inflate(inflater, R.layout.bus_nearby_bus_stop_list, parent, false))
     }
 
-    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
-        (holder as BusStopViewHolder).bind(busArrivalList[position], busStopsList[position], clickListener)
+    override fun onBindViewHolder(holder: BaseViewHolder, position: Int) {
+        Timber.i("Binding viewHolder $holder with position=$position")
+        val item = getItem(position)
+        holder.bindData(item)
     }
 
-    override fun getItemCount(): Int {
-        return busArrivalList.count()
+    override fun submitList(list: MutableList<BusStopsSection>?) {
+        super.submitList(list?.map { it.copy()})
     }
 
-    inner class BusStopViewHolder(private val binding: BusNearbyBusStopListBinding) : RecyclerView.ViewHolder(binding.root) {
-        fun bind(busArrival: BusArrival, busStopsValue: BusStopsValue, clickListener: (BusArrival) -> Unit) {
-            binding.tvBusStopName.text = busStopsValue.Description
-            binding.tvBusStopCode.text = busArrival.busStopCode
+    /* BaseViewHolder */
+    abstract inner class BaseViewHolder(v: View) : RecyclerView.ViewHolder(v) {
+        abstract fun bindData(item: BusStopsSection)
+    }
 
-            val busServiceCount = busArrival.services.count()
+    /* ViewHolder */
+    inner class BusNearbyBusStopViewHolder(
+        val binding: BusNearbyBusStopListBinding
+    ): BaseViewHolder(binding.root){
+        override fun bindData(item: BusStopsSection) {
+            Timber.i("List Check: ${item.busStopValue.BusStopCode}")
+            binding.tvBusStopName.text = item.busStopValue.Description
+            binding.tvBusStopCode.text = item.busStopValue.BusStopCode
+
+            val busServiceCount = item.busServiceList.count()
 
             if (busServiceCount == 0) {
                 // Set the text and update the constraint for moreBus textview
                 val moreBusTV = binding.tvMoreBus
-                moreBusTV.text = appContext.getString(R.string.no_available_bus)
+                moreBusTV.text = itemView.context.getString(R.string.no_available_bus)
                 val lParams = moreBusTV.layoutParams as ConstraintLayout.LayoutParams
                 lParams.startToStart = binding.itemGroupCL.id
 
                 busServiceVisibility(binding, busServiceCount, true)
             } else {
                 // There are Bus Service Found
-                val busServiceCount = busArrival.services.count()
+                val busServiceCount = item.busServiceList.count()
                 val moreBusCount = busServiceCount - 5
 
                 if (busServiceCount >= 5) {
                     // There are 5 or more bus service found
                     val busOrBuses = if (moreBusCount != 1) "es" else ""
-                    binding.tvBusNo1.text = busArrival.services[0].serviceNo
-                    binding.tvBusNo2.text = busArrival.services[1].serviceNo
-                    binding.tvBusNo3.text = busArrival.services[2].serviceNo
-                    binding.tvBusNo4.text = busArrival.services[3].serviceNo
-                    binding.tvBusNo5.text = busArrival.services[4].serviceNo
-                    binding.tvMoreBus.text = ("+$moreBusCount ${appContext.getString(R.string.x_more_bus)}$busOrBuses")
+                    binding.tvBusNo1.text = item.busServiceList[0].serviceNo
+                    binding.tvBusNo2.text = item.busServiceList[1].serviceNo
+                    binding.tvBusNo3.text = item.busServiceList[2].serviceNo
+                    binding.tvBusNo4.text = item.busServiceList[3].serviceNo
+                    binding.tvBusNo5.text = item.busServiceList[4].serviceNo
+                    binding.tvMoreBus.text = ("+$moreBusCount ${itemView.context.getString(R.string.x_more_bus)}$busOrBuses")
 
                     val isMoreBus = (moreBusCount != 0)
                     busServiceVisibility(binding, busServiceCount, isMoreBus)
@@ -65,17 +88,33 @@ class BusNearbyBusStopAdapter(var busArrivalList: List<BusArrival>, var busStops
                     val listOfTVBusNo = listOf(binding.tvBusNo1, binding.tvBusNo2, binding.tvBusNo3, binding.tvBusNo4, binding.tvBusNo5)
 
                     for (i in 0 until busServiceCount - 1) {
-                        listOfTVBusNo[i].text = busArrival.services[i].serviceNo
+                        listOfTVBusNo[i].text = item.busServiceList[i].serviceNo
                     }
 
                     busServiceVisibility(binding, busServiceCount, false)
                 }
             }
 
-            binding.root.setOnClickListener { clickListener(busArrival) }
+            //binding.root.setOnClickListener { clickListener(busArrival) }
+        }
+
+    }
+
+    /* DiffUtil */
+    class BusNearbyBusStopDiffUtil : DiffUtil.ItemCallback<BusStopsSection>() {
+
+        override fun areItemsTheSame(oldItem: BusStopsSection, newItem: BusStopsSection): Boolean {
+            Timber.i("Enter areItemsTheSame")
+            return oldItem.javaClass == newItem.javaClass
+        }
+
+        override fun areContentsTheSame(oldItem: BusStopsSection, newItem: BusStopsSection): Boolean {
+            Timber.i("Enter areContentsTheSame")
+            return oldItem == newItem
         }
     }
 
+    /* Data Logic */
     private fun busServiceVisibility(binding: BusNearbyBusStopListBinding, countBusService: Int, moreBus: Boolean) {
         // 0 = just show moreBus without loop
         if (countBusService == 0) {
@@ -102,3 +141,4 @@ class BusNearbyBusStopAdapter(var busArrivalList: List<BusArrival>, var busStops
         }
     }
 }
+

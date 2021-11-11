@@ -15,3 +15,10 @@ data class BusStopsValue(
     val Latitude: Double,
     val Longitude: Double
 )
+
+data class BusStopsSection(
+    val type: Int,
+    val busStopValue: BusStopsValue,
+    val busServiceList: List<Service>
+)
+

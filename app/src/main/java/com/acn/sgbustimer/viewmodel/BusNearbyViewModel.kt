@@ -12,6 +12,7 @@ import com.acn.sgbustimer.di.module.BusArrivalModule
 import com.acn.sgbustimer.di.module.BusStopsModule
 import com.acn.sgbustimer.di.module.CommonObjectModule
 import com.acn.sgbustimer.model.BusArrival
+import com.acn.sgbustimer.model.BusStopsSection
 import com.acn.sgbustimer.model.BusStopsValue
 import com.acn.sgbustimer.repository.BusArrivalRepository
 import com.acn.sgbustimer.util.Constant
@@ -51,11 +52,12 @@ class BusNearbyViewModel @Inject constructor(
     val listOfBusArrivalLiveData: LiveData<List<BusArrival>>
         get() = _listOfBusArrivalLiveData
 
-
     private var arrListOfAllSGBusStops: ArrayList<BusStopsValue> = injAllSGBusStops
     private val arrListOfNBBusStops by lazy { injNBBusStopList }
     val listOfNBBusStops: List<BusStopsValue>
         get() = arrListOfNBBusStops
+
+    val arrListOfBusStopsSection by lazy { ArrayList<BusStopsSection>() }
 
     // Google Map Location Objects
     private val _fusedLocationProviderClient = MutableLiveData<FusedLocationProviderClient>()
@@ -66,6 +68,7 @@ class BusNearbyViewModel @Inject constructor(
     val currentLocation: LiveData<Location>
         get() = _currentLocation
 
+    // Initializer
     init {
         _permissionGranted.value = true
         _fusedLocationProviderClient.value =
@@ -77,9 +80,8 @@ class BusNearbyViewModel @Inject constructor(
     }
 
     /* Google Map Related */
-    // Get User Current location
     fun userCurrentLocation() {
-
+        // Get User Current location
         if (ActivityCompat.checkSelfPermission(vmAppContext, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
             ActivityCompat.checkSelfPermission(vmAppContext, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED
         ) {
@@ -103,7 +105,7 @@ class BusNearbyViewModel @Inject constructor(
     }
 
     fun markerRadius(): CircleOptions {
-
+        // To create a geofence radius based on user current location; to be called from the UI
         _currentLocation.value?.let {
             val circle: CircleOptions by lazy {
                 CircleOptions()
@@ -125,9 +127,11 @@ class BusNearbyViewModel @Inject constructor(
 
         return CircleOptions()
     }
+    /* Google Map Related ENDS */
 
+    /* Data Logic */
     private fun updateNearbyBusStops() {
-
+       // To Update all the nearby bus stop based on user current location
        viewModelScope.launch {
             _currentLocation.value?.let {
                 Timber.i("Updating Nearby Bus Stops...")
@@ -161,4 +165,17 @@ class BusNearbyViewModel @Inject constructor(
             }
         }
     }
+
+    fun combineListForAdapter(){
+        val countID = 0
+        for (busStop in arrListOfNBBusStops) {
+            _listOfBusArrivalLiveData.value?.let{
+                val busStopsSection = BusStopsSection(countID, busStop, it[countID].services)
+                arrListOfBusStopsSection.add(busStopsSection)
+            }
+        }
+
+    }
+
+    /* Data Logic Ends */
 }
