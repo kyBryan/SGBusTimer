@@ -53,7 +53,7 @@ class BusNearbyViewModel @Inject constructor(
         get() = _listOfBusArrivalLiveData
 
     private var arrListOfAllSGBusStops: ArrayList<BusStopsValue> = injAllSGBusStops
-    private val arrListOfNBBusStops by lazy { injNBBusStopList }
+    private var arrListOfNBBusStops = injNBBusStopList
     val listOfNBBusStops: List<BusStopsValue>
         get() = arrListOfNBBusStops
 
@@ -156,7 +156,9 @@ class BusNearbyViewModel @Inject constructor(
                     }
                 }
 
-                arrListOfNBBusStops.addAll(BusStopsModule.arrListOfNBBusStops)
+                // *Notes: arrListOfNBBusStops already contain a reference to BusStopsModule.arrListOfNBBusStops,
+                // therefore arrListOfNBBusStops.addAll will add to BusStopsModule.arrListOfNBBusStops as well. Resulted in Duplicates
+                //arrListOfNBBusStops.addAll(BusStopsModule.arrListOfNBBusStops)
 
                 withContext(Main) {
                     _listOfBusArrivalLiveData.value = BusArrivalModule.provideNearbyBusArrivalList(retrofit).toList()
@@ -167,12 +169,15 @@ class BusNearbyViewModel @Inject constructor(
     }
 
     fun combineListForAdapter(){
-        val countID = 0
+        var countID = 0
+        if(arrListOfBusStopsSection.count() != 0) { arrListOfBusStopsSection.clear() }
         for (busStop in arrListOfNBBusStops) {
             _listOfBusArrivalLiveData.value?.let{
                 val busStopsSection = BusStopsSection(countID, busStop, it[countID].services)
                 arrListOfBusStopsSection.add(busStopsSection)
             }
+
+            countID += 1
         }
 
     }

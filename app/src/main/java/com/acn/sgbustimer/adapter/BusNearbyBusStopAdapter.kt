@@ -17,7 +17,7 @@ import com.acn.sgbustimer.model.BusStopsValue
 import timber.log.Timber
 
 class BusNearbyBusStopAdapter(
-    //private val onHomeItemClickListener: OnHomeItemClickListener
+    private val clickListener: (BusStopsSection) -> Unit
 ): ListAdapter<BusStopsSection, BusNearbyBusStopAdapter.BaseViewHolder>(
     BusNearbyBusStopDiffUtil()
 ) {
@@ -35,23 +35,24 @@ class BusNearbyBusStopAdapter(
     override fun onBindViewHolder(holder: BaseViewHolder, position: Int) {
         Timber.i("Binding viewHolder $holder with position=$position")
         val item = getItem(position)
-        holder.bindData(item)
+        //val clickListener: (BusStopsSection) -> Unit
+        holder.bindData(item, clickListener)
     }
 
-    override fun submitList(list: MutableList<BusStopsSection>?) {
-        super.submitList(list?.map { it.copy()})
-    }
+//    override fun submitList(list: MutableList<BusStopsSection>?) {
+//        super.submitList(list?.map { it.copy()})
+//    }
 
     /* BaseViewHolder */
     abstract inner class BaseViewHolder(v: View) : RecyclerView.ViewHolder(v) {
-        abstract fun bindData(item: BusStopsSection)
+        abstract fun bindData(item: BusStopsSection, clickListener: (BusStopsSection) -> Unit)
     }
 
     /* ViewHolder */
     inner class BusNearbyBusStopViewHolder(
         val binding: BusNearbyBusStopListBinding
     ): BaseViewHolder(binding.root){
-        override fun bindData(item: BusStopsSection) {
+        override fun bindData(item: BusStopsSection, clickListener: (BusStopsSection) -> Unit) {
             Timber.i("List Check: ${item.busStopValue.BusStopCode}")
             binding.tvBusStopName.text = item.busStopValue.Description
             binding.tvBusStopCode.text = item.busStopValue.BusStopCode
@@ -95,7 +96,7 @@ class BusNearbyBusStopAdapter(
                 }
             }
 
-            //binding.root.setOnClickListener { clickListener(busArrival) }
+            binding.root.setOnClickListener { clickListener(item) }
         }
 
     }
@@ -104,13 +105,16 @@ class BusNearbyBusStopAdapter(
     class BusNearbyBusStopDiffUtil : DiffUtil.ItemCallback<BusStopsSection>() {
 
         override fun areItemsTheSame(oldItem: BusStopsSection, newItem: BusStopsSection): Boolean {
-            Timber.i("Enter areItemsTheSame")
+            Timber.i("Enter areItemsTheSame: ${oldItem.javaClass == newItem.javaClass}")
+            // Identify items as a whole.
             return oldItem.javaClass == newItem.javaClass
         }
 
         override fun areContentsTheSame(oldItem: BusStopsSection, newItem: BusStopsSection): Boolean {
-            Timber.i("Enter areContentsTheSame")
-            return oldItem == newItem
+            Timber.i("Enter areContentsTheSame: ${oldItem.busStopValue.BusStopCode == newItem.busStopValue.BusStopCode}")
+            // Can use a unique identifier like BusStopCode, to check if items are the same.
+            // If just using oldItem == newItem, their memory address might be different, therefore result in a crash.
+            return oldItem.busStopValue.BusStopCode == newItem.busStopValue.BusStopCode
         }
     }
 
