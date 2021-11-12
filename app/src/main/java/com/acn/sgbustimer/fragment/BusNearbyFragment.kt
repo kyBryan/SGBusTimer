@@ -19,6 +19,7 @@ import com.acn.sgbustimer.adapter.BusNearbyBusStopAdapter
 import com.acn.sgbustimer.di.module.AppModule
 import com.acn.sgbustimer.di.module.BusStopsModule
 import com.acn.sgbustimer.model.BusArrival
+import com.acn.sgbustimer.model.BusStopsSection
 import com.acn.sgbustimer.repository.BusArrivalRepository
 import com.acn.sgbustimer.util.Constant
 import com.acn.sgbustimer.util.Constant.Companion.dp
@@ -53,8 +54,8 @@ class BusNearbyFragment : Fragment() {
     // Bottom Sheet
     private lateinit var bottomSheetBehavior: BottomSheetBehavior<ConstraintLayout>
 
-    // Recycle View
-    private lateinit var busStopAdapter: BusNearbyBusStopAdapter
+    // List Adapter
+    private val busStopAdapter by lazy { BusNearbyBusStopAdapter(){ busStopsSection: BusStopsSection -> busStopClicked(busStopsSection)  } }
 
     // View Model
     private val busArrivalVM: BusNearbyViewModel by lazy {
@@ -123,32 +124,22 @@ class BusNearbyFragment : Fragment() {
 
         // Recycler View for listing bus stops
         binding.inclBusNearbyBottomSheetDialog.rvBusStops.layoutManager = LinearLayoutManager(appContext)
-        binding.inclBusNearbyBottomSheetDialog.rvBusStops.setHasFixedSize(true)
+        //binding.inclBusNearbyBottomSheetDialog.rvBusStops.setHasFixedSize(true)
 
-        busStopAdapter = BusNearbyBusStopAdapter(listOf(), listOf(), appContext) { busStop: BusArrival -> busStopClicked(busStop)  }
         binding.inclBusNearbyBottomSheetDialog.rvBusStops.adapter = busStopAdapter
-
-        // Bus Arrival Api
-        //arrListBusStopCodes.addAll(listOf("70211", "70309", "66369"))
 
         busArrivalVM.listOfBusArrivalLiveData.observe(viewLifecycleOwner){ response ->
             if (response == null){
                 Timber.i("Response is Null listOfBusArrivalLiveData")
                 return@observe
             }
-            //Timber.i("Print Response Service No: ${response[0].services[0].serviceNo}")
 
-            busStopAdapter.busArrivalList = response
-            busStopAdapter.busStopsList = busArrivalVM.listOfNBBusStops
-            // Inform recycler view that data has changed.
-            // Makes sure the view re-renders itself
-            busStopAdapter.notifyDataSetChanged()
+            Timber.i("Observed Variable changed.")
+            busArrivalVM.combineListForAdapter()
+            busStopAdapter.submitList(busArrivalVM.arrListOfBusStopsSection.toMutableList())
 
             bottomSheetBehavior.state = BottomSheetBehavior.STATE_HALF_EXPANDED
         }
-
-        //busArrivalVM.setListOfNearbyBusStop(arrListBusStopCodes)
-
 
         // Inflate the layout for this fragment
         return binding.root
@@ -258,18 +249,18 @@ class BusNearbyFragment : Fragment() {
     /* Google Map Related Ends*/
 
     /* BusStop Item Clicked function Starts */
-    private fun busStopClicked(busStop : BusArrival) {
+    private fun busStopClicked(busStop : BusStopsSection) {
 
-        Timber.i("Clicked on BusStop: ${busStop.busStopCode}")
-        val busStopCode = busStop.busStopCode
+        Timber.i("Clicked on BusStop: ${busStop.busStopValue.BusStopCode}")
+        val busStopCode = busStop.busStopValue.BusStopCode
         val busServiceNoList: MutableList<String> = mutableListOf()
         val busServiceNextTime: MutableList<String> = mutableListOf()
         val busServiceNextTimeTwo: MutableList<String> = mutableListOf()
 
-        for(i in 0 until busStop.services.count()){
-            busServiceNoList.add(busStop.services[i].serviceNo)
-            busServiceNextTime.add(busStop.services[i].nextBus.estimatedArrival)
-            busServiceNextTimeTwo.add(busStop.services[i].nextBus2.estimatedArrival)
+        for(i in 0 until busStop.busServiceList.count()){
+            busServiceNoList.add(busStop.busServiceList[i].serviceNo)
+            busServiceNextTime.add(busStop.busServiceList[i].nextBus.estimatedArrival)
+            busServiceNextTimeTwo.add(busStop.busServiceList[i].nextBus2.estimatedArrival)
         }
 
         view?.let{
