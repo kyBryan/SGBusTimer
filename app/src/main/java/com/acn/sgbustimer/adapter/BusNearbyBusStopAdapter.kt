@@ -75,11 +75,9 @@ class BusNearbyBusStopAdapter(
                 if (busServiceCount >= 5) {
                     // There are 5 or more bus service found
                     val busOrBuses = if (moreBusCount != 1) "es" else ""
-                    binding.tvBusNo1.text = item.busServiceList[0].serviceNo
-                    binding.tvBusNo2.text = item.busServiceList[1].serviceNo
-                    binding.tvBusNo3.text = item.busServiceList[2].serviceNo
-                    binding.tvBusNo4.text = item.busServiceList[3].serviceNo
-                    binding.tvBusNo5.text = item.busServiceList[4].serviceNo
+                    for (i in 0..4){
+                        binding.tvBusNo5.text = item.busServiceList[i].serviceNo
+                    }
                     binding.tvMoreBus.text = ("+$moreBusCount ${itemView.context.getString(R.string.x_more_bus)}$busOrBuses")
 
                     val isMoreBus = (moreBusCount != 0)
