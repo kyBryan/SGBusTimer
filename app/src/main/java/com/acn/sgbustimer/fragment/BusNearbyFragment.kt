@@ -38,7 +38,7 @@ import timber.log.Timber
 import java.util.*
 
 @AndroidEntryPoint
-class BusNearbyFragment : Fragment() {
+class BusNearbyFragment : Fragment(), OnBusStopClickListener {
 
     // Google Map
     private var mapJob: CompletableJob? = null
@@ -55,7 +55,7 @@ class BusNearbyFragment : Fragment() {
     private lateinit var bottomSheetBehavior: BottomSheetBehavior<ConstraintLayout>
 
     // List Adapter
-    private val busStopAdapter by lazy { BusNearbyBusStopAdapter(){ busStopsSection: BusStopsSection -> busStopClicked(busStopsSection)  } }
+    private val busStopAdapter by lazy { BusNearbyBusStopAdapter(this) }
 
     // View Model
     private val busArrivalVM: BusNearbyViewModel by lazy {
@@ -249,7 +249,7 @@ class BusNearbyFragment : Fragment() {
     /* Google Map Related Ends*/
 
     /* BusStop Item Clicked function Starts */
-    private fun busStopClicked(busStop : BusStopsSection) {
+    override fun busStopClicked(busStop : BusStopsSection) {
 
         Timber.i("Clicked on BusStop: ${busStop.busStopValue.BusStopCode}")
         val busStopCode = busStop.busStopValue.BusStopCode
@@ -301,4 +301,8 @@ class BusNearbyFragment : Fragment() {
         }
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
     }
+}
+
+interface OnBusStopClickListener{
+    fun busStopClicked(busStop : BusStopsSection)
 }

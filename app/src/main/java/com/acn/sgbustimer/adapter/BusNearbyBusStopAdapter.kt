@@ -11,13 +11,14 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.acn.sgbustimer.R
 import com.acn.sgbustimer.databinding.BusNearbyBusStopListBinding
+import com.acn.sgbustimer.fragment.OnBusStopClickListener
 import com.acn.sgbustimer.model.BusArrival
 import com.acn.sgbustimer.model.BusStopsSection
 import com.acn.sgbustimer.model.BusStopsValue
 import timber.log.Timber
 
 class BusNearbyBusStopAdapter(
-    private val clickListener: (BusStopsSection) -> Unit
+    private val clickListener: OnBusStopClickListener
 ): ListAdapter<BusStopsSection, BusNearbyBusStopAdapter.BaseViewHolder>(
     BusNearbyBusStopDiffUtil()
 ) {
@@ -29,30 +30,31 @@ class BusNearbyBusStopAdapter(
         Timber.i("Create view holder for $viewType")
 
         val inflater = LayoutInflater.from(parent.context)
-        return BusNearbyBusStopViewHolder(DataBindingUtil.inflate(inflater, R.layout.bus_nearby_bus_stop_list, parent, false))
+        return BusNearbyBusStopViewHolder(DataBindingUtil.inflate(inflater, R.layout.bus_nearby_bus_stop_list, parent, false), clickListener)
     }
 
     override fun onBindViewHolder(holder: BaseViewHolder, position: Int) {
         Timber.i("Binding viewHolder $holder with position=$position")
         val item = getItem(position)
-        //val clickListener: (BusStopsSection) -> Unit
-        holder.bindData(item, clickListener)
+        holder.bindData(item)
     }
-
-//    override fun submitList(list: MutableList<BusStopsSection>?) {
-//        super.submitList(list?.map { it.copy()})
-//    }
 
     /* BaseViewHolder */
     abstract inner class BaseViewHolder(v: View) : RecyclerView.ViewHolder(v) {
-        abstract fun bindData(item: BusStopsSection, clickListener: (BusStopsSection) -> Unit)
+        abstract fun bindData(item: BusStopsSection)
     }
 
     /* ViewHolder */
     inner class BusNearbyBusStopViewHolder(
-        val binding: BusNearbyBusStopListBinding
+        private val binding: BusNearbyBusStopListBinding,
+        private val clickListener: OnBusStopClickListener
     ): BaseViewHolder(binding.root){
-        override fun bindData(item: BusStopsSection, clickListener: (BusStopsSection) -> Unit) {
+
+        init {
+            binding.root.setOnClickListener { clickListener.busStopClicked((getItem(bindingAdapterPosition))) }
+        }
+
+        override fun bindData(item: BusStopsSection) {
             Timber.i("List Check: ${item.busStopValue.BusStopCode}")
             binding.tvBusStopName.text = item.busStopValue.Description
             binding.tvBusStopCode.text = item.busStopValue.BusStopCode
@@ -94,8 +96,6 @@ class BusNearbyBusStopAdapter(
                     busServiceVisibility(binding, busServiceCount, false)
                 }
             }
-
-            binding.root.setOnClickListener { clickListener(item) }
         }
 
     }
